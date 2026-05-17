@@ -1,0 +1,17 @@
+# 環境変数（絶対にGitHubに上げない）
+automation/.env
+
+# Python
+__pycache__/
+*.py[cod]
+automation/output/
+
+# Node
+node_modules/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Netlify
+.netlify/
