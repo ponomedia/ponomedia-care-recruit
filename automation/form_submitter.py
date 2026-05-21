@@ -257,6 +257,17 @@ class FormSubmitter:
         else:
             action_url = urljoin(page_url, action_url)
 
+        # ★ 外部ドメインへのフォーム送信ブロック
+        # フォームのaction先が施設サイトと別ドメインなら送信しない
+        blocked_reason = self._check_form_action_url(action_url, page_url)
+        if blocked_reason:
+            logger.warning(f"  ★ フォームaction URLをブロック: {action_url} — {blocked_reason}")
+            return {
+                "success": False,
+                "method": "form",
+                "reason": f"不正なフォーム送信先: {blocked_reason}",
+            }
+
         method = best_form.get("method", "POST").upper()
 
         logger.debug(f"フォーム送信先: {action_url} [{method}]")
@@ -572,6 +583,45 @@ class FormSubmitter:
 
         # 分類できないフィールドはスキップ
         return None
+
+    # 外部フォームサービス（これらへの送信は絶対にしない）
+    EXTERNAL_FORM_SERVICES = [
+        "docs.google.com", "forms.gle",          # Google Forms
+        "form.run", "tayori.com",                 # 日本製フォームサービス
+        "mailchimp.com", "typeform.com",          # 海外フォームサービス
+        "formrun.com", "kintoneapp.com",          # kintone等
+        "wufoo.com", "jotform.com",
+        "secure.helpscout.net", "zendesk.com",
+    ]
+
+    def _check_form_action_url(self, action_url: str, page_url: str) -> str:
+        """
+        フォームのaction URLが安全かどうかを確認する。
+
+        Returns:
+            "" → 問題なし（送信してよい）
+            str → ブロック理由
+        """
+        if not action_url:
+            return ""
+
+        action_lower = action_url.lower()
+
+        # 既知の外部フォームサービスをブロック
+        for svc in self.EXTERNAL_FORM_SERVICES:
+            if svc in action_lower:
+                return f"外部フォームサービス: {svc}"
+
+        # action URLと page URLのドメインが異なる場合もブロック
+        try:
+            action_host = urlparse(action_url).netloc.lower().replace("www.", "")
+            page_host = urlparse(page_url).netloc.lower().replace("www.", "")
+            if action_host and page_host and action_host != page_host:
+                return f"フォーム送信先が別ドメイン: {action_host} (施設: {page_host})"
+        except Exception:
+            pass
+
+        return ""
 
     def _check_form_is_resident_type(
         self, page_text: str, forms: list[dict]

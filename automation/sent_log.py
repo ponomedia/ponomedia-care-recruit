@@ -9,6 +9,7 @@ import json
 import logging
 import os
 import shutil
+import tempfile
 import threading
 from datetime import datetime, date
 
@@ -40,12 +41,30 @@ def _load() -> list:
 
 
 def _save(records: list):
-    """書き込み前にバックアップを作成してから保存する（ロック済み前提）。"""
+    """
+    原子的書き込み（temp→rename）でログを保存する（ロック済み前提）。
+
+    クラッシュしても旧ファイルが残るため、重複送信が発生しない。
+    書き込み成功後にバックアップを更新する。
+    """
     os.makedirs(os.path.dirname(SENT_LOG_FILE), exist_ok=True)
-    if os.path.exists(SENT_LOG_FILE):
-        shutil.copy2(SENT_LOG_FILE, SENT_LOG_BACKUP)
-    with open(SENT_LOG_FILE, "w", encoding="utf-8") as f:
-        json.dump(records, f, ensure_ascii=False, indent=2)
+    dir_path = os.path.dirname(SENT_LOG_FILE)
+    # 同じディレクトリにtempファイルを作成（rename が atomic になる）
+    fd, tmp_path = tempfile.mkstemp(dir=dir_path, suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            json.dump(records, f, ensure_ascii=False, indent=2)
+        # 旧ファイルをバックアップしてから rename（atomic swap）
+        if os.path.exists(SENT_LOG_FILE):
+            shutil.copy2(SENT_LOG_FILE, SENT_LOG_BACKUP)
+        os.replace(tmp_path, SENT_LOG_FILE)  # os.replace は Windows でも atomic
+    except Exception:
+        # 書き込み失敗時は tempファイルを削除して例外を再送出
+        try:
+            os.unlink(tmp_path)
+        except OSError:
+            pass
+        raise
 
 
 def already_sent(url: str = "", email: str = "", facility_name: str = "") -> bool:

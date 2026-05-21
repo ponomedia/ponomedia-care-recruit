@@ -62,8 +62,11 @@ class EmailGenerator:
         Returns:
             {"subject": str, "body": str}
         """
-        # 件名：施設種別に応じた自然な件名
-        subject = FACILITY_TYPE_SUBJECT.get(facility_type, "介護職採用ページまわりの整備について")
+        # 件名：施設名を入れて全施設で異なる件名にする（スパム判定防止）
+        base_subject = FACILITY_TYPE_SUBJECT.get(facility_type, "介護職採用ページまわりの整備について")
+        # 施設名の最初の8文字を件名に含める（長すぎる場合は省略）
+        name_prefix = facility_name[:8] if facility_name and facility_name != "不明施設" else ""
+        subject = f"{name_prefix}様 {base_subject}" if name_prefix else base_subject
 
         # 施設種別ごとの本文コンテキスト
         facility_context = FACILITY_TYPE_CONTEXT.get(

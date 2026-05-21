@@ -17,6 +17,7 @@ import csv
 import json
 import logging
 import os
+import re
 import sys
 import time
 import uuid
@@ -120,6 +121,79 @@ def setup_output_dir() -> str:
 
 
 QUEUE_FILE = os.path.join(os.path.dirname(__file__), "output", "approval_queue.json")
+
+
+# =========================================================
+# 送信前ガード関数
+# =========================================================
+
+def is_business_hours() -> bool:
+    """平日 9:00〜18:00 の範囲内かどうかを確認する"""
+    now = datetime.now()
+    if now.weekday() >= 5:  # 土曜(5)・日曜(6)
+        return False
+    return 9 <= now.hour < 18
+
+
+def load_client_blocklist() -> set:
+    """
+    既存クライアントのドメイン・メールを読み込む。
+    clients/ フォルダ内の *.txt ファイルに1行1エントリで記載する。
+    """
+    blocklist = set()
+    clients_dir = os.path.join(os.path.dirname(__file__), "..", "clients")
+    clients_dir = os.path.normpath(clients_dir)
+    if not os.path.isdir(clients_dir):
+        return blocklist
+    for fname in os.listdir(clients_dir):
+        if not fname.endswith(".txt"):
+            continue
+        fpath = os.path.join(clients_dir, fname)
+        try:
+            with open(fpath, "r", encoding="utf-8") as f:
+                for line in f:
+                    entry = line.strip().lower()
+                    if entry and not entry.startswith("#"):
+                        blocklist.add(entry)
+        except Exception:
+            pass
+    return blocklist
+
+
+def is_existing_client(url: str, email: str, facility_name: str, blocklist: set) -> bool:
+    """既存クライアントかどうかをブロックリストと照合する"""
+    if not blocklist:
+        return False
+    from urllib.parse import urlparse
+    try:
+        domain = urlparse(url).netloc.lower().replace("www.", "")
+    except Exception:
+        domain = ""
+    checks = [domain, email.lower() if email else "", facility_name.strip()]
+    for entry in blocklist:
+        if any(entry in c or c in entry for c in checks if c):
+            return True
+    return False
+
+
+# 介護・福祉以外の業種キーワード（これらが施設名に入っていたらスキップ）
+NON_CARE_KEYWORDS = [
+    "タクシー", "介護タクシー", "福祉タクシー", "移送",
+    "医療機器", "介護用品", "福祉用具", "レンタル",
+    "薬局", "調剤", "ドラッグ",
+    "建設", "工務店", "リフォーム",
+    "保険", "金融", "不動産",
+    "IT", "システム", "コンサル",
+    "飲食", "レストラン", "カフェ",
+]
+
+def is_non_care_facility(facility_name: str, url: str) -> bool:
+    """施設名・URLから介護以外の業種を検出する"""
+    combined = f"{facility_name} {url}".lower()
+    for kw in NON_CARE_KEYWORDS:
+        if kw in combined:
+            return True
+    return False
 
 
 # 明らかに介護施設と無関係なURLパターン（要確認扱いにする）
@@ -262,6 +336,22 @@ def main():
         logger.info(f"   → キューファイル: {QUEUE_FILE}")
         logger.info("   → approver_server.py を起動してスマホから承認してください")
 
+    # ★ 夜間・休日の送信ブロック（dry-run は除外）
+    if not args.dry_run and not args.queue_mode and not is_business_hours():
+        logger.warning("★ 営業時間外（平日9:00〜18:00以外）のため送信をスキップします")
+        logger.warning("  dry-run や --queue-mode なら時間外でも実行できます")
+        sys.exit(0)
+
+    # ★ SERVICE_URLが空の場合は警告（メール本文にURLが入らない）
+    if not config.SERVICE_URL and not args.dry_run:
+        logger.warning("⚠ SERVICE_LP_URL が未設定です。メール本文にサービスURLが入りません。")
+        logger.warning("  .env の SERVICE_LP_URL を設定するか、--dry-run で内容確認してください。")
+
+    # 既存クライアントのブロックリストを読み込む
+    client_blocklist = load_client_blocklist()
+    if client_blocklist:
+        logger.info(f"既存クライアントブロックリスト: {len(client_blocklist)} 件読み込み済み")
+
     # 対象エリアを決定（(name, heartpage_id) タプルのリスト）
     if args.area:
         # --area が指定された場合: 名前で検索して対応するタプルを探す
@@ -393,6 +483,24 @@ def main():
                 seen_urls.add(url_norm)
 
                 logger.info(f"  処理中: {facility_name} ({url[:60]}...)" if len(url) > 60 else f"  処理中: {facility_name} ({url})")
+
+                # ★ 施設名「不明施設」「不明」のまま処理しない
+                if not facility_name.strip() or facility_name in ("不明施設", "不明", "unknown"):
+                    logger.warning(f"  施設名が不明のためスキップ: '{facility_name}'")
+                    facility_count += 1
+                    continue
+
+                # ★ 既存クライアントブロック
+                if is_existing_client(url, "", facility_name, client_blocklist):
+                    logger.info(f"  既存クライアントのためスキップ: {facility_name}")
+                    facility_count += 1
+                    continue
+
+                # ★ 介護以外の業種を検出してスキップ
+                if is_non_care_facility(facility_name, url):
+                    logger.warning(f"  介護以外の業種と判断してスキップ: {facility_name}")
+                    facility_count += 1
+                    continue
 
                 # Step 3: サイトをスクレイピング
                 facility_data = researcher.scrape_facility(url)
