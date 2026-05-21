@@ -116,7 +116,7 @@ class FacilityResearcher:
         time.sleep(wait_seconds)
         return results
 
-    def scrape_facility(self, url: str, timeout: int = 10) -> Optional[dict]:
+    def scrape_facility(self, url: str, timeout: int = 10, follow_hiring_page: bool = True) -> Optional[dict]:
         """
         施設サイトをスクレイピングして採用関連情報を抽出する。
 
@@ -202,6 +202,19 @@ class FacilityResearcher:
             "is_sales_prohibited": _pass1["is_prohibited"],
             "sales_guard_pass1": _pass1,
         }
+
+        # 採用ページの中身を追加スクレイピング（最大1ページ）
+        # トップページだけでは採用サイトの充実度を正しく評価できないため
+        if follow_hiring_page and hiring_links:
+            hiring_page_data = self._scrape_hiring_page(hiring_links, url, timeout)
+            if hiring_page_data:
+                data["hiring_page_text"] = hiring_page_data["text"]
+                data["hiring_page_url"] = hiring_page_data["url"]
+                data["hiring_page_has_form"] = hiring_page_data["has_form"]
+                # 採用ページにもメールがあれば追加
+                extra_emails = [e for e in hiring_page_data["emails"] if e not in data["emails"]]
+                data["emails"] = data["emails"] + extra_emails
+
         return data
 
     # ------------------------------------------------------------------
@@ -303,6 +316,66 @@ class FacilityResearcher:
             return True
 
         return False
+
+    def _scrape_hiring_page(
+        self, hiring_links: list[dict], base_url: str, timeout: int = 10
+    ) -> Optional[dict]:
+        """
+        採用ページを1件スクレイピングして基本情報を返す。
+
+        Args:
+            hiring_links: _find_hiring_links() が返したリスト
+            base_url: 施設トップページのURL（相対URLの解決に使用）
+            timeout: HTTPタイムアウト秒数
+
+        Returns:
+            {"url", "text", "has_form", "emails"} または None
+        """
+        from urllib.parse import urljoin, urlparse
+
+        for link in hiring_links[:3]:  # 最大3候補を試みる
+            href = link.get("href", "")
+            if not href:
+                continue
+
+            # 相対URLを絶対URLに変換
+            if href.startswith("http"):
+                target_url = href
+            else:
+                target_url = urljoin(base_url, href)
+
+            # 外部ドメインには飛ばない（施設公式サイト内のみ）
+            base_host = urlparse(base_url).netloc
+            target_host = urlparse(target_url).netloc
+            if base_host and target_host and base_host != target_host:
+                logger.debug(f"採用ページが別ドメインのためスキップ: {target_url}")
+                continue
+
+            # 同一ページへのループを防ぐ
+            if target_url.rstrip("/") == base_url.rstrip("/"):
+                continue
+
+            try:
+                resp = requests.get(target_url, headers=self.HEADERS, timeout=timeout)
+                resp.raise_for_status()
+                resp.encoding = resp.apparent_encoding or "utf-8"
+                soup = BeautifulSoup(resp.text, "lxml")
+                text = " ".join(soup.get_text(separator=" ").split())
+                has_form = bool(soup.find("form"))
+                emails = list(set(self.EMAIL_PATTERN.findall(resp.text)))
+                emails = [e for e in emails if not e.endswith((".png", ".jpg", ".gif", ".svg"))]
+                logger.debug(f"採用ページスクレイピング成功: {target_url} ({len(text)}字)")
+                return {
+                    "url": target_url,
+                    "text": text[:5000],
+                    "has_form": has_form,
+                    "emails": emails,
+                }
+            except Exception as e:
+                logger.debug(f"採用ページ取得失敗 ({target_url}): {e}")
+                continue
+
+        return None
 
     def _find_hiring_links(self, links: list[dict], base_url: str) -> list[dict]:
         """採用・求人関連のリンクを抽出する"""
