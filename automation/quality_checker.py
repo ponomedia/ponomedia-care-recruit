@@ -20,13 +20,34 @@ CARE_KEYWORDS = [
     "採用", "求人", "スタッフ", "職員", "募集", "障害",
 ]
 
-# 明らかにNGなドメイン（ポータル・求人サイト）
+# 入居希望者向けポータル・比較サイトを示すキーワード（複数該当で NG）
+RESIDENT_PORTAL_KEYWORDS = [
+    "施設を探す", "老人ホームを探す", "介護施設を探す",
+    "施設一覧", "施設を比較", "エリアで探す",
+    "件の施設が見つかりました", "件の施設を表示",
+    "入居費用", "入居金", "月額費用", "入居相談",
+    "資料請求", "無料で相談", "施設の空室",
+    "複数の施設", "おすすめの施設", "口コミ・評判",
+]
+
+# 明らかにNGなドメイン（ポータル・求人サイト・入居者向け比較サイト）
 NG_DOMAINS = [
+    # 介護ポータル（入居希望者向け）
     "homes.co.jp", "kaigokensaku", "minnanokaigo", "caresapo",
+    "kaigo114", "ansinkaigo", "kiracare", "carenavi",
+    "lifull.com", "lifullsenior", "s-kaigo.jp",
+    "kaigo-guide.jp", "ninchisho-navi.net", "kaigo-ryoukin.com",
+    "carely.org", "oasisnavi.jp", "kaigodb.com",
+    "seniorguide.jp", "oyasmile.com", "join-kaigo.jp",
+    "kaigonohonne.com", "caresul-kaigo.jp", "premium-care.jp",
+    # 求人ポータル
     "kaigojob", "job-medley", "indeed", "townwork", "hellowork",
-    "hotpepper", "tabelog", "navitime", "mapion", "ekiten",
-    "heartpage", "caretree", "kaigo114", "ansinkaigo", "kiracare",
     "machbaito", "telnavi", "woman-type", "caremanagement",
+    "arubaito-ex.jp", "en-japan.com", "mynavi.jp", "doda.jp",
+    # その他NG
+    "heartpage", "caretree", "hotpepper", "tabelog",
+    "navitime", "mapion", "ekiten",
+    # 行政
     "wam.go.jp", "mhlw.go.jp", "pref.", ".lg.jp",
 ]
 
@@ -130,6 +151,16 @@ class QualityChecker:
                 "reason": "介護・福祉関連キーワードがサイト上で確認できない",
             }
 
+        # [5.5] 入居希望者向けポータルサイトの検出
+        # 「施設を探す」「入居費用」「施設一覧」等のキーワードが複数あれば
+        # 入居者向けポータルとみなす（公式サイトには出ない表現）
+        portal_hits = [kw for kw in RESIDENT_PORTAL_KEYWORDS if kw in combined]
+        if len(portal_hits) >= 2:
+            return {
+                "verdict": "fail",
+                "reason": f"入居希望者向けポータルサイトの疑い: {portal_hits[:3]}",
+            }
+
         # [6] 施設名の一部がページに含まれるか（前4文字で緩くチェック）
         name_key = facility_name[:4] if len(facility_name) >= 4 else facility_name
         if name_key not in combined and name_key.lower() not in host:
@@ -164,16 +195,25 @@ class QualityChecker:
 
         prompt = (
             f"以下の情報を見て、このURLが「{facility_name}」という"
-            f"介護・福祉施設の公式サイトとして適切かどうか判定してください。\n\n"
+            f"介護・福祉施設の【法人・事業所が自分で運営する公式サイト】かどうかを判定してください。\n\n"
             f"施設名: {facility_name}\n"
             f"URL: {url}\n"
             f"ページタイトル: {title}\n"
             f"メタ説明: {meta}\n"
             f"本文冒頭: {text_preview}\n"
             f"取得メール: {contact_email or 'なし'}\n\n"
+            f"【必ずFAILにすべきケース】\n"
+            f"・入居希望者向けポータル（LIFULL介護・みんなの介護・介護のほんね等）の施設紹介ページ\n"
+            f"・複数施設を比較・一覧表示するサイト（「施設を探す」「件の施設が見つかりました」等）\n"
+            f"・求人ポータル（Indeed・求人ボックス・カイゴジョブ等）\n"
+            f"・行政・公的機関のサイト（.go.jp / .lg.jp）\n"
+            f"・介護施設と無関係のサイト\n\n"
+            f"【PASSにすべきケース】\n"
+            f"・その施設の法人・事業所が直接運営しているサイト\n"
+            f"・施設名・住所・採用情報・サービス内容が自施設のものとして掲載されている\n\n"
             f"以下のいずれか1語のみで判定し、2行目に短い理由を書いてください:\n"
             f"PASS   — 公式サイトとして適切\n"
-            f"FAIL   — 明らかに不適切（ポータル・無関係サイト等）\n"
+            f"FAIL   — 不適切（ポータル・比較サイト・無関係サイト等）\n"
             f"REVIEW — 判断が難しい（要人間確認）"
         )
 

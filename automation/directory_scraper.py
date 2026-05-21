@@ -78,6 +78,12 @@ class DirectoryScraper:
         "mapion.co.jp", "map.yahoo.co.jp", "navitime.co.jp",
         "iタウンページ", "itp.ne.jp", "phonebook", "ekiten.jp",
         "jalan.net", "tabelog.com", "hotpepper.jp",
+        # 入居希望者向けポータル（ここが重要: 職員採用の営業先ではない）
+        "lifull.com", "lifullsenior", "s-kaigo.jp",
+        "kaigo-guide.jp", "ninchisho-navi.net", "kaigo-ryoukin.com",
+        "carely.org", "oasisnavi.jp", "oyasmile.com",
+        "seniorguide.jp", "join-kaigo.jp", "kaigonohonne.com",
+        "premium-care.jp", "caresul-kaigo.jp",
         # 行政・公的機関
         "mhlw.go.jp", "mext.go.jp", "cao.go.jp",
         "pref.", "city.", ".lg.jp",
