@@ -980,3 +980,134 @@ button {
     display: none;
   }
 }
+
+/* ============================================
+   代表者挨拶
+   ============================================ */
+.section-greeting {
+  background: #F8F9FA;
+}
+
+.greeting-inner {
+  max-width: 720px;
+  margin: 0 auto;
+  background: #fff;
+  border-radius: 16px;
+  padding: 40px 32px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+}
+
+.greeting-body p {
+  color: #444;
+  font-size: 1rem;
+  line-height: 1.9;
+  margin-bottom: 1.2em;
+}
+
+.greeting-body p:last-of-type {
+  margin-bottom: 0;
+}
+
+.greeting-profile {
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid #E8ECF0;
+}
+
+.greeting-profile-name {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #1A1A2E;
+  margin-bottom: 4px;
+}
+
+.greeting-profile-meta {
+  font-size: 0.88rem;
+  color: #777;
+  line-height: 1.7;
+}
+
+/* ============================================
+   Legal Sections (特商法・プライバシーポリシー)
+   ============================================ */
+.section-legal {
+  padding: 60px 0;
+}
+
+.legal-table-wrap {
+  overflow-x: auto;
+  margin-top: 24px;
+}
+
+.legal-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  line-height: 1.7;
+}
+
+.legal-table th,
+.legal-table td {
+  padding: 12px 16px;
+  border: 1px solid #e2e8f0;
+  vertical-align: top;
+  text-align: left;
+}
+
+.legal-table th {
+  background: #f7fafc;
+  width: 200px;
+  min-width: 160px;
+  font-weight: 600;
+  color: #2d3748;
+  white-space: nowrap;
+}
+
+.legal-table td {
+  color: #4a5568;
+}
+
+.legal-body {
+  margin-top: 24px;
+  font-size: 0.9rem;
+  color: #4a5568;
+  line-height: 1.8;
+  max-width: 760px;
+}
+
+.legal-body h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #2d3748;
+  margin: 20px 0 6px;
+}
+
+.legal-body p {
+  margin-bottom: 8px;
+}
+
+.footer-links {
+  margin: 10px 0;
+  font-size: 0.82rem;
+}
+
+.footer-links a {
+  color: #a0aec0;
+  text-decoration: none;
+}
+
+.footer-links a:hover {
+  color: #fff;
+}
+
+.footer-links span {
+  color: #718096;
+  margin: 0 6px;
+}
+
+@media (max-width: 600px) {
+  .legal-table th {
+    width: 120px;
+    min-width: 100px;
+  }
+}

@@ -14,10 +14,12 @@ PonoMedia 介護採用 営業自動化パイプライン
 
 import argparse
 import csv
+import json
 import logging
 import os
 import sys
 import time
+import uuid
 from datetime import datetime
 
 from dotenv import load_dotenv
@@ -27,11 +29,14 @@ load_dotenv()
 
 import config
 from researcher import FacilityResearcher
+from directory_scraper import DirectoryScraper
 from scorer import HiringPageScorer
 from email_generator import EmailGenerator
 from email_sender import GmailSender
 from sales_guard import SalesGuard
 from form_submitter import FormSubmitter
+from sent_log import already_sent, record_sent, get_sent_urls
+from quality_checker import QualityChecker
 
 # =========================================================
 # ロギング設定
@@ -88,6 +93,11 @@ def parse_args() -> argparse.Namespace:
         help="メールを実際に送信しないテストモード",
     )
     parser.add_argument(
+        "--queue-mode",
+        action="store_true",
+        help="送信せずにスマホ承認キューへ保存（approver_server.py で承認後に送信）",
+    )
+    parser.add_argument(
         "--max-facilities",
         type=int,
         default=50,
@@ -107,6 +117,121 @@ def setup_output_dir() -> str:
     output_dir = os.path.join(os.path.dirname(__file__), config.OUTPUT_DIR)
     os.makedirs(output_dir, exist_ok=True)
     return output_dir
+
+
+QUEUE_FILE = os.path.join(os.path.dirname(__file__), "output", "approval_queue.json")
+
+
+# 明らかに介護施設と無関係なURLパターン（要確認扱いにする）
+SUSPICIOUS_URL_PATTERNS = [
+    "monacoin", "bitcoin", "blockchain", "crypto", "block?page=",
+    "wikipedia.org", "news.yahoo", "google.com/maps", "google.co.jp/maps",
+    "facebook.com", "twitter.com", "instagram.com", "youtube.com",
+    "amazon.co.jp", "rakuten.co.jp",
+]
+
+# 介護施設の公式サイトらしいキーワード（1つでも含めばOK）
+CARE_FACILITY_KEYWORDS = [
+    "kaigo", "care", "service", "welfare", "fukushi", "デイ", "介護",
+    "グループ", "ホーム", "訪問", "riei", "facility",
+]
+
+
+def is_suspicious_url(url: str, facility_name: str) -> bool:
+    """URLが明らかに介護施設と無関係かどうかを判定する"""
+    if not url:
+        return False
+    url_lower = url.lower()
+
+    # 明らかに無関係なパターンに一致する場合
+    for pattern in SUSPICIOUS_URL_PATTERNS:
+        if pattern in url_lower:
+            return True
+
+    from urllib.parse import urlparse
+    try:
+        host = urlparse(url).netloc.lower()
+
+        # .jp でも非公式・ポータルと判断するドメイン
+        jp_non_official = [
+            "mapion.co.jp", "itp.ne.jp", "ekiten.jp", "tabelog.com",
+            "caremanagement.jp", "r-guide.jp", "kaigo114.jp",
+            "minnanokaigo.com", "ansinkaigo.jp", "carenavi.jp",
+            "kaigokensaku.mhlw.go.jp", "wam.go.jp", "mhlw.go.jp",
+            "mext.go.jp", ".lg.jp", "arubaito-ex.jp", "job-medley.com",
+            "kaigojob.com", "yelp.com", "jalan.net", "hotpepper.jp",
+            "navitime.co.jp", "caresapo.jp", "kiracare.jp",
+        ]
+        if any(d in host for d in jp_non_official):
+            return True
+
+        # .jp ドメインはOK
+        if host.endswith(".jp"):
+            return False
+
+        # 日本系プラットフォームはOK
+        jp_safe = ["ameblo.jp", "fc2.com", "wix.com", "jimdo.com",
+                   "goope.jp", "localplace.jp", "blogspot.com", "wordpress.com"]
+        if any(p in host for p in jp_safe):
+            return False
+
+        # それ以外の外国ドメインは要確認
+        return True
+    except Exception:
+        return False
+
+
+def enqueue_for_approval(
+    facility: dict,
+    score_result: dict,
+    email_data: dict,
+    contact_email: str,
+    force_needs_review: bool = False,
+) -> None:
+    """承認キューに1件追加する（approver_server.py で処理）"""
+    os.makedirs(os.path.dirname(QUEUE_FILE), exist_ok=True)
+    queue = []
+    if os.path.exists(QUEUE_FILE):
+        with open(QUEUE_FILE, "r", encoding="utf-8") as f:
+            queue = json.load(f)
+
+    url = facility.get("url", "")
+    facility_name = facility.get("name", "")
+
+    # ★ キュー内重複チェック（pending/needs_review にすでに同じURLがあればスキップ）
+    url_norm = url.lower().rstrip("/").replace("https://", "").replace("http://", "")
+    for existing in queue:
+        ex_url = existing.get("url", "").lower().rstrip("/").replace("https://", "").replace("http://", "")
+        if existing.get("status") in ("pending", "needs_review", "sent") and ex_url and ex_url == url_norm:
+            logger.info(f"  → キュー内重複スキップ: {facility_name} ({url})")
+            return
+
+    # 怪しいURLは「要確認」ステータスにしてキューには入れるが自動送信対象外
+    suspicious = is_suspicious_url(url, facility_name) or force_needs_review
+    if suspicious:
+        logger.warning(f"  ⚠️ 要確認URL: {facility_name} → {url}")
+        logger.warning(f"  → 承認画面に「要確認」として表示します（手動確認してください）")
+
+    item = {
+        "id": str(uuid.uuid4())[:8],
+        "status": "needs_review" if suspicious else "pending",
+        "added_at": datetime.now().isoformat(),
+        "facility_name": facility.get("name", ""),
+        "facility_type": facility.get("facility_type", ""),
+        "area": facility.get("area", ""),
+        "url": facility.get("url", ""),
+        "rank": score_result.get("rank", ""),
+        "score": score_result.get("total_score", 0),
+        "weaknesses": score_result.get("weakness_reasons", []),
+        "email_subject": email_data.get("subject", ""),
+        "email_body": email_data.get("body", ""),
+        "contact_email": contact_email,
+    }
+    queue.append(item)
+
+    with open(QUEUE_FILE, "w", encoding="utf-8") as f:
+        json.dump(queue, f, ensure_ascii=False, indent=2)
+    logger.info(f"  → キューに追加: {item['facility_name']} (id: {item['id']})")
 
 
 def validate_email_config() -> bool:
@@ -132,12 +257,22 @@ def main():
 
     if args.dry_run:
         logger.info("★ DRY-RUNモード: メールは送信されません")
+    if args.queue_mode:
+        logger.info("★ QUEUEモード: 送信せずにスマホ承認キューへ保存します")
+        logger.info(f"   → キューファイル: {QUEUE_FILE}")
+        logger.info("   → approver_server.py を起動してスマホから承認してください")
 
-    # 対象エリアを決定
-    target_areas = [args.area] if args.area else config.TARGET_AREAS
+    # 対象エリアを決定（(name, heartpage_id) タプルのリスト）
+    if args.area:
+        # --area が指定された場合: 名前で検索して対応するタプルを探す
+        matched = [(n, hid) for n, hid in config.TARGET_AREAS if args.area in n]
+        target_areas = matched if matched else [(args.area, None)]
+    else:
+        target_areas = config.TARGET_AREAS
+
     rank_filter = [r.strip().upper() for r in args.rank_filter.split(",")]
 
-    logger.info(f"対象エリア: {target_areas}")
+    logger.info(f"対象エリア: {[n for n, _ in target_areas]}")
     logger.info(f"対象施設タイプ: {config.FACILITY_TYPES}")
     logger.info(f"処理ランクフィルタ: {rank_filter}")
     logger.info(f"最大施設数: {args.max_facilities}")
@@ -149,6 +284,7 @@ def main():
 
     # モジュール初期化
     researcher = FacilityResearcher()
+    directory = DirectoryScraper()
     scorer = HiringPageScorer()
     generator = EmailGenerator()
     sales_guard = SalesGuard()
@@ -156,6 +292,7 @@ def main():
         sales_guard=sales_guard,
         wait_seconds=config.WAIT_BETWEEN_REQUESTS,
     )
+    quality_checker = QualityChecker()
 
     # メール送信機能の準備
     email_configured = validate_email_config()
@@ -175,7 +312,7 @@ def main():
     # =========================================================
     # パイプライン実行
     # =========================================================
-    seen_urls: set = set()       # 重複URL排除用
+    seen_urls: set = get_sent_urls()  # 送信済みURL（過去分）を初期値として読み込む
     all_results: list = []       # CSVに書き込む全結果
 
     # 統計カウンタ
@@ -194,7 +331,7 @@ def main():
 
     facility_count = 0  # 処理済み施設数
 
-    for area in target_areas:
+    for area_name, area_id in target_areas:
         if facility_count >= args.max_facilities:
             logger.info(f"最大施設数 ({args.max_facilities}) に達したため終了します")
             break
@@ -203,17 +340,43 @@ def main():
             if facility_count >= args.max_facilities:
                 break
 
-            logger.info(f"\n--- 検索: {area} × {facility_type} ---")
+            logger.info(f"\n--- 検索: {area_name} × {facility_type} ---")
 
-            # Step 1: DuckDuckGoで施設を検索
-            facilities = researcher.search_facilities(
-                area=area,
-                facility_type=facility_type,
-                max_results=config.SEARCH_RESULTS_PER_QUERY,
-                wait_seconds=config.WAIT_BETWEEN_REQUESTS,
-            )
+            # Step 1: heartpageから施設一覧を取得（area_idがある場合）
+            facilities = []
+            if area_id:
+                raw_facilities = directory.scrape_facilities(
+                    area_id=area_id,
+                    area_name=area_name,
+                    facility_type=facility_type,
+                    max_per_page=config.SEARCH_RESULTS_PER_QUERY * 2,
+                    wait_seconds=config.WAIT_BETWEEN_REQUESTS,
+                )
+                # 各施設の公式サイトURLをDDGで検索
+                for fac in raw_facilities:
+                    official_url = directory.find_official_website(
+                        facility_name=fac["name"],
+                        facility_type=facility_type,
+                        area_name=area_name,
+                        phone=fac.get("phone", ""),
+                        wait_seconds=config.WAIT_BETWEEN_REQUESTS,
+                    )
+                    fac["url"] = official_url or ""
+                    if official_url:
+                        facilities.append(fac)
+                    else:
+                        logger.debug(f"  公式サイト未取得: {fac['name']}")
+            else:
+                # heartpageなし → DDGフォールバック
+                facilities = researcher.search_facilities(
+                    area=area_name,
+                    facility_type=facility_type,
+                    max_results=config.SEARCH_RESULTS_PER_QUERY,
+                    wait_seconds=config.WAIT_BETWEEN_REQUESTS,
+                )
+
             stats["total_searched"] += len(facilities)
-            logger.info(f"  {len(facilities)}件の施設を発見")
+            logger.info(f"  {len(facilities)}件の施設を発見（公式サイトURL取得済み）")
 
             for facility in facilities:
                 if facility_count >= args.max_facilities:
@@ -222,11 +385,12 @@ def main():
                 url = facility.get("url", "")
                 facility_name = facility.get("name", "不明施設")
 
-                # Step 2: 重複URLをスキップ
-                if url in seen_urls:
+                # Step 2: 重複URLをスキップ（seen_urlsは正規化済みなので比較前に正規化する）
+                url_norm = url.lower().rstrip("/").replace("https://", "").replace("http://", "")
+                if url_norm in seen_urls:
                     logger.debug(f"  重複URL スキップ: {url}")
                     continue
-                seen_urls.add(url)
+                seen_urls.add(url_norm)
 
                 logger.info(f"  処理中: {facility_name} ({url[:60]}...)" if len(url) > 60 else f"  処理中: {facility_name} ({url})")
 
@@ -246,6 +410,30 @@ def main():
                     f"ランク: {rank} | "
                     f"弱点: {len(score_result['weakness_reasons'])}件"
                 )
+
+                # Step 4.5: 品質2重チェック（内部ルール + CODEX）
+                contact_email_tmp = ""
+                if facility_data and facility_data.get("emails"):
+                    contact_email_tmp = facility_data["emails"][0]
+                quality = quality_checker.check(
+                    facility_name=facility_name,
+                    url=url,
+                    facility_data=facility_data,
+                    contact_email=contact_email_tmp,
+                )
+                if quality["verdict"] == "fail":
+                    logger.warning(
+                        f"  ★ 品質チェックNG → スキップ: {quality['reason']}"
+                        + (" (CODEX)" if quality["codex_used"] else "")
+                    )
+                    facility_count += 1
+                    continue
+                if quality["verdict"] == "needs_review":
+                    logger.warning(
+                        f"  ⚠️ 品質チェック要確認 → needs_reviewでキュー追加: {quality['reason']}"
+                        + (" (CODEX)" if quality["codex_used"] else "")
+                    )
+                    # needs_review として強制フラグを立てて enqueue（後段で処理）
 
                 # Step 5: ランクフィルタ（CまたはフィルタにないランクはスキップCSVに記録のみ）
                 if rank not in rank_filter:
@@ -267,11 +455,21 @@ def main():
                 email_data = generator.generate_outreach_email(
                     facility_name=facility_name,
                     facility_type=facility_type,
-                    area=area,
+                    area=area_name,
                     score_result=score_result,
                     service_lp_url=config.SERVICE_URL,
                     sample_site_url=config.SAMPLE_SITE_URL,
                 )
+
+                # ★ 施設名・本文の空チェック（不完全データは絶対に送らない）
+                if not facility_name.strip():
+                    logger.warning("  施設名が空のためスキップ")
+                    facility_count += 1
+                    continue
+                if not email_data.get("body", "").strip():
+                    logger.warning("  メール本文が空のためスキップ")
+                    facility_count += 1
+                    continue
 
                 # 連絡先メールを特定
                 contact_email = ""
@@ -299,6 +497,35 @@ def main():
                         form_submitted=False,
                         contact_method="blocked",
                         notes=f"営業禁止検出（Pass 1）のためスキップ: {matched_info}",
+                    )
+                    facility_count += 1
+                    continue
+
+                # =========================================================
+                # --queue-mode: 送信せずにキューに保存してスキップ
+                # =========================================================
+                if args.queue_mode:
+                    # 送信済みチェック（URL・メール・施設名）
+                    if already_sent(url=url, email=contact_email, facility_name=facility_name):
+                        logger.info(f"  → 送信済みのためキュースキップ: {facility_name}")
+                        facility_count += 1
+                        continue
+                    enqueue_for_approval(
+                        facility=facility,
+                        score_result=score_result,
+                        email_data=email_data,
+                        contact_email=contact_email,
+                        force_needs_review=(quality["verdict"] == "needs_review"),
+                    )
+                    _append_result(
+                        all_results,
+                        facility, score_result,
+                        contact_email=contact_email,
+                        email_subject=email_data["subject"],
+                        email_sent=False,
+                        form_submitted=False,
+                        contact_method="queued",
+                        notes="承認待ちキューに追加",
                     )
                     facility_count += 1
                     continue
@@ -353,6 +580,7 @@ def main():
                         contact_method = "form"
                         notes = f"フォーム送信成功: {contact_form_url}"
                         logger.info(f"  フォーム送信成功: {contact_form_url}")
+                        record_sent(facility_name, url, contact_email, "form")
                         time.sleep(config.WAIT_BETWEEN_EMAILS)
 
                 elif contact_form_url and args.dry_run:
@@ -382,6 +610,14 @@ def main():
                         contact_method = "none"
 
                     elif sender:
+                        # ★ 日次上限チェック（本番実行時も上限を守る）
+                        from sent_log import daily_limit_reached
+                        if daily_limit_reached():
+                            logger.warning("  本日の送信上限に達しました。送信をスキップします")
+                            notes = "日次送信上限到達のためスキップ"
+                            contact_method = "limit-reached"
+                            facility_count += 1
+                            continue
                         # メール実送信
                         success = sender.send(
                             to_email=contact_email,
@@ -394,6 +630,7 @@ def main():
                             contact_method = "email"
                             notes = f"メール送信成功: {contact_email}"
                             logger.info(f"  メール送信成功: {contact_email}")
+                            record_sent(facility_name, url, contact_email, "email")
                             time.sleep(config.WAIT_BETWEEN_EMAILS)
                         else:
                             notes = "メール送信失敗"

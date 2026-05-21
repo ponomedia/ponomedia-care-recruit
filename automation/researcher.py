@@ -8,10 +8,11 @@ import re
 import time
 import logging
 from typing import Optional
+from urllib.parse import urlparse
 
 import requests
 from bs4 import BeautifulSoup
-from duckduckgo_search import DDGS
+from ddgs import DDGS
 
 logger = logging.getLogger(__name__)
 
@@ -70,30 +71,43 @@ class FacilityResearcher:
         Returns:
             施設情報dictのリスト
         """
-        query = f"{facility_type} {area} 採用 求人"
+        # 施設名+エリアで検索（採用・求人は含めない → ポータル混入を減らす）
+        query = f"{facility_type} {area}"
         logger.info(f"検索クエリ: {query}")
+
+        # 絞り込みのため検索件数を多めに取得してフィルタリング
+        fetch_count = max_results * 4
 
         results = []
         try:
             with DDGS() as ddgs:
-                for item in ddgs.text(query, max_results=max_results):
-                    # 求人サイト・ポータルサイトは除外（施設自身のサイトを優先）
+                for item in ddgs.text(query, max_results=fetch_count):
                     url = item.get("href", "")
+                    title = item.get("title", "")
+                    snippet = item.get("body", "")
+
+                    # 求人ポータルは除外
                     if self._is_job_portal(url):
                         logger.debug(f"求人ポータルのためスキップ: {url}")
                         continue
 
+                    # 日本のサイト以外は除外（.jpドメインまたはJP関連コンテンツ）
+                    if not self._is_likely_japanese_facility(url, title, snippet, facility_type, area):
+                        logger.debug(f"介護施設でないためスキップ: {url}")
+                        continue
+
                     facility = {
-                        "name": self._extract_name_from_title(
-                            item.get("title", ""), facility_type
-                        ),
+                        "name": self._extract_name_from_title(title, facility_type),
                         "url": url,
-                        "snippet": item.get("body", ""),
+                        "snippet": snippet,
                         "area": area,
                         "facility_type": facility_type,
                     }
                     results.append(facility)
                     logger.debug(f"  発見: {facility['name']} — {url}")
+
+                    if len(results) >= max_results:
+                        break
 
         except Exception as e:
             logger.warning(f"DuckDuckGo検索エラー ({query}): {e}")
@@ -195,15 +209,57 @@ class FacilityResearcher:
     # ------------------------------------------------------------------
 
     def _is_job_portal(self, url: str) -> bool:
-        """求人ポータルサイトか判定する（施設公式サイト以外を除外）"""
+        """求人ポータル・施設ディレクトリサイトか判定する（施設公式サイト以外を除外）"""
         portals = [
+            # 大手求人ポータル
             "indeed.com", "doda.jp", "mynavi.jp", "rikunabi.com",
-            "hellowork.go.jp", "kaigo-job.net", "care-garden.jp",
-            "job-medley.com", "kaigonohimitsu.com", "townwork.net",
-            "baitoru.com", "shigoto.jp", "kaigojob.com", "s-kaigo.jp",
+            "hellowork.go.jp", "townwork.net", "baitoru.com", "shigoto.jp",
+            # 介護専門求人ポータル
+            "kaigo-job.net", "care-garden.jp", "job-medley.com",
+            "kaigonohimitsu.com", "kaigojob.com", "s-kaigo.jp",
+            "kiracare.jp", "kaigo-center.jp", "kaigoshigoto.com",
+            "caresapo.jp", "kaigo-kyujin.com", "hitometubo.jp",
+            "care-kyujin.net", "kaigo-matching.com", "kaigofukushi.com",
+            "carepro.jp", "carenejp.com", "kaigo-yell.com",
+            "smile-nurse.jp", "job-net.jp", "hw-jobs.careermine.jp",
+            # ハローワーク関連・アグリゲーター
+            "hellowork-plus.com", "hellowork-search.com", "hw-plus.com",
+            "xn--pckua2a7gp15o89zb.com",
+            # 介護施設ディレクトリ・一覧サイト
+            "ansinkaigo.jp", "i-careservice.com", "lyxis.com",
+            "kaigo.net", "kaigodb.com", "homecare.or.jp",
+            "carekarte.jp", "e-nursingcare.com", "kaigo-map.net",
+            "minnanokaigo.com", "kaigo-times.jp", "kaigokensaku.jp",
+            "kaigo114.jp", "carenavi.jp", "fukushi.jp",
+            "wam.go.jp", "kaigokensaku.mhlw.go.jp",
+            # その他アグリゲーター
+            "google.com/search", "yahoo.co.jp/search",
+            "en-gage.net", "wantedly.com", "workplacejapan.com",
+            "fukushishigoto.com", "fukushi-work.jp",
         ]
         url_lower = url.lower()
-        return any(portal in url_lower for portal in portals)
+        if any(portal in url_lower for portal in portals):
+            return True
+
+        # URLに「一覧」「list」「search」「/area/」などが含まれる場合も除外
+        # （施設名ではなくエリア一覧ページと判断）
+        listing_patterns = [
+            "/list", "/search", "/area/", "/chiba/", "/tokyo/",
+            "/shokai/", "/category/", "/navi/", "/ranking/",
+            "/p-chiba", "/p-tokyo", "/22", "/12",  # 都道府県コード
+        ]
+        import re
+        # URLパスに市区町村コード相当（6桁以上の数字）のセグメントがあれば一覧ページと判断
+        try:
+            path = urlparse(url_lower).path
+            segments = [s for s in path.split("/") if s]
+            numeric_segments = sum(1 for s in segments if re.match(r"^\d{6,}$", s))
+            if numeric_segments >= 1:
+                return True
+        except Exception:
+            pass
+
+        return False
 
     def _extract_name_from_title(self, title: str, facility_type: str) -> str:
         """検索結果タイトルから施設名を抽出する"""
@@ -212,6 +268,41 @@ class FacilityResearcher:
             if separator in title:
                 return title.split(separator)[0].strip()
         return title.strip() or "不明施設"
+
+    def _is_likely_japanese_facility(
+        self, url: str, title: str, snippet: str, facility_type: str, area: str
+    ) -> bool:
+        """
+        URLがエリアの介護施設サイトである可能性が高いか判定する。
+
+        以下のいずれかを満たす場合に True を返す:
+        - .jp / .co.jp ドメイン
+        - タイトル・スニペットに施設種別またはエリア名が含まれる
+        """
+        url_lower = url.lower()
+
+        # 明らかな海外大手サービスは除外
+        exclude_domains = [
+            "microsoft.com", "office.com", "google.com", "apple.com",
+            "amazon.com", "facebook.com", "twitter.com", "youtube.com",
+            "wikipedia.org", "github.com", "stackoverflow.com",
+        ]
+        if any(d in url_lower for d in exclude_domains):
+            return False
+
+        # .jpドメインはOK
+        if ".jp" in url_lower:
+            return True
+
+        # タイトルまたはスニペットに施設種別・エリア名・介護キーワードが含まれる
+        care_keywords = ["介護", "福祉", "デイ", "訪問", "グループホーム", "老人", "障害"]
+        combined = f"{title} {snippet}"
+        if any(kw in combined for kw in care_keywords):
+            return True
+        if area.replace("県", "").replace("市", "").replace("町", "") in combined:
+            return True
+
+        return False
 
     def _find_hiring_links(self, links: list[dict], base_url: str) -> list[dict]:
         """採用・求人関連のリンクを抽出する"""
