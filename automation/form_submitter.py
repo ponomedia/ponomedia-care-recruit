@@ -3,9 +3,15 @@ form_submitter.py — 問い合わせフォーム自動送信モジュール
 
 注意: 送信前に必ずSalesGuardによる2重チェックを実施する。
      営業禁止サイトへの送信は物理的にブロックされる。
+
+フォームタイプチェック（入居者向けフォームへの誤送信防止）:
+  Pass 1: URL選択時に入居者向けキーワードを除外 / 採用・業者向けを優先
+  Pass 2: フォームページ取得後に内部ルールでフォームタイプを確認
+  Pass 3: CODEXで「入居者向けか？業者・採用向けか？」をダブルチェック
 """
 
 import logging
+import subprocess
 import time
 from typing import Optional
 from urllib.parse import urljoin, urlparse
@@ -16,6 +22,23 @@ from bs4 import BeautifulSoup
 from sales_guard import SalesGuard
 
 logger = logging.getLogger(__name__)
+
+# 入居希望者向けフォームを示すキーワード（URLおよびページテキストで使用）
+RESIDENT_FORM_KEYWORDS = [
+    "入居相談", "入居のご相談", "入居を希望", "入居をお考え", "入居申込",
+    "入居に関する", "施設への入居", "入居について",
+    "見学予約", "見学のご予約", "見学申込",
+    "資料請求", "資料のご請求", "資料をご請求",
+    "空室確認", "空室状況", "入居費用",
+    "ご入居", "ご見学",
+]
+
+# 採用・業者向けフォームを優先するキーワード（URLおよびリンクテキスト）
+# ★ 汎用的な「お問い合わせ」は含めない（fallbackで拾う）
+PREFERRED_FORM_KEYWORDS = [
+    "採用", "求人", "saiyo", "recruit", "career",
+    "業者", "取引先", "事業者", "法人",
+]
 
 
 class FormSubmitter:
@@ -64,8 +87,10 @@ class FormSubmitter:
         """
         スクレイピング済みデータからコンタクトフォームURLを探す。
 
-        facility_data["all_links"] を走査し、hrefまたはリンクテキストに
-        コンタクト系キーワードが含まれるリンクを返す。
+        優先順位:
+          1. 採用・業者・一般お問い合わせ向けのフォーム（最優先）
+          2. 一般的なお問い合わせフォーム
+          NG: 入居相談・見学予約・資料請求フォームは除外
 
         Args:
             facility_data: researcher.scrape_facility() が返す辞書
@@ -79,26 +104,47 @@ class FormSubmitter:
         all_links = facility_data.get("all_links", [])
         base_url = facility_data.get("url", "")
 
+        preferred_url = None   # 採用・業者向け（最優先）
+        fallback_url = None    # 一般お問い合わせ（次点）
+
         for link in all_links:
             href = link.get("href", "")
-            text = link.get("text", "")
+            text = link.get("text", "") or ""
 
             href_lower = href.lower()
-            text_str = text if text else ""
+            combined = f"{href_lower} {text}"
 
-            # hrefまたはリンクテキストにキーワードが含まれるか確認
+            # ★ 入居者向けフォームは絶対に除外（URLとテキスト両方でチェック）
+            if any(kw in combined for kw in RESIDENT_FORM_KEYWORDS):
+                logger.debug(f"入居者向けフォームのためスキップ: {href} ({text})")
+                continue
+
+            # コンタクト系キーワードが含まれるか
             href_match = any(kw.lower() in href_lower for kw in self.CONTACT_KEYWORDS)
-            text_match = any(kw in text_str for kw in self.CONTACT_KEYWORDS)
+            text_match = any(kw in text for kw in self.CONTACT_KEYWORDS)
 
-            if href_match or text_match:
-                # 相対URLを絶対URLに変換
-                absolute_url = urljoin(base_url, href) if href else None
-                if absolute_url:
-                    logger.debug(f"コンタクトフォームURL発見: {absolute_url}")
-                    return absolute_url
+            if not (href_match or text_match):
+                continue
 
-        logger.debug(f"コンタクトフォームURLが見つかりませんでした: {base_url}")
-        return None
+            absolute_url = urljoin(base_url, href) if href else None
+            if not absolute_url:
+                continue
+
+            # 採用・業者向けキーワードがあれば最優先
+            if any(kw in combined for kw in PREFERRED_FORM_KEYWORDS):
+                if preferred_url is None:
+                    preferred_url = absolute_url
+                    logger.debug(f"採用/業者向けフォームURL発見（優先）: {absolute_url}")
+            elif fallback_url is None:
+                fallback_url = absolute_url
+                logger.debug(f"一般お問い合わせフォームURL発見（次点）: {absolute_url}")
+
+        result = preferred_url or fallback_url
+        if result:
+            logger.debug(f"使用するフォームURL: {result}")
+        else:
+            logger.debug(f"コンタクトフォームURLが見つかりませんでした: {base_url}")
+        return result
 
     def scrape_form_page(self, url: str, timeout: int = 10) -> Optional[dict]:
         """
@@ -305,7 +351,7 @@ class FormSubmitter:
                 return result
 
             # ============================================================
-            # Pass 2チェック: フォームページを再スキャン（ハードブロック）
+            # Pass 2a: 営業禁止フォームチェック（ハードブロック）
             # ============================================================
             pass2_result = self.sales_guard.check_form_page(form_page_data["page_text"])
 
@@ -319,8 +365,43 @@ class FormSubmitter:
                     "reason": reason,
                 }
 
-            # Pass 2 クリア → 送信実行
-            logger.info(f"  Pass 2チェック通過。フォーム送信開始...")
+            # ============================================================
+            # Pass 2b: フォームタイプ内部チェック（入居者向けフォーム検出）
+            # ============================================================
+            resident_check = self._check_form_is_resident_type(
+                form_page_data["page_text"], form_page_data.get("forms", [])
+            )
+            if resident_check["is_resident"]:
+                logger.warning(
+                    f"  ★ BLOCKED (入居者向けフォーム検出): {contact_form_url}"
+                    f" — {resident_check['reason']}"
+                )
+                return {
+                    "success": False,
+                    "blocked": True,
+                    "reason": f"入居者向けフォームのため送信不可: {resident_check['reason']}",
+                }
+
+            # ============================================================
+            # Pass 2c: CODEX フォームタイプダブルチェック（グレーな場合）
+            # ============================================================
+            if resident_check.get("uncertain"):
+                codex_ok = self._codex_form_type_check(
+                    contact_form_url, form_page_data["page_text"],
+                    form_page_data.get("forms", [])
+                )
+                if not codex_ok:
+                    logger.warning(
+                        f"  ★ BLOCKED (CODEX: 入居者向けフォームと判定): {contact_form_url}"
+                    )
+                    return {
+                        "success": False,
+                        "blocked": True,
+                        "reason": "CODEX確認: 入居希望者向けフォームのため送信不可",
+                    }
+
+            # 全チェック通過 → 送信実行
+            logger.info(f"  フォームタイプ・Pass 2チェック通過。フォーム送信開始...")
             result = self.submit_form(
                 form_page_data=form_page_data,
                 message_subject=message_subject,
@@ -491,6 +572,130 @@ class FormSubmitter:
 
         # 分類できないフィールドはスキップ
         return None
+
+    def _check_form_is_resident_type(
+        self, page_text: str, forms: list[dict]
+    ) -> dict:
+        """
+        フォームページのテキストとフォームフィールドから、
+        入居希望者向けフォームかどうかを内部ルールで判定する。
+
+        Returns:
+            {
+                "is_resident": bool,   # 確実に入居者向け → ブロック
+                "uncertain": bool,     # グレー → CODEXに回す
+                "reason": str,
+            }
+        """
+        text_lower = page_text.lower()
+
+        # フォームのフィールドラベルも含めてチェック
+        field_labels = []
+        for form in forms:
+            for field in form.get("fields", []):
+                label = field.get("label", "")
+                placeholder = field.get("placeholder", "")
+                if label:
+                    field_labels.append(label)
+                if placeholder:
+                    field_labels.append(placeholder)
+        labels_combined = " ".join(field_labels).lower()
+        combined = f"{text_lower} {labels_combined}"
+
+        # 確実に入居者向けのキーワードが複数あればブロック
+        resident_hits = [kw for kw in RESIDENT_FORM_KEYWORDS if kw in combined]
+        if len(resident_hits) >= 2:
+            return {
+                "is_resident": True,
+                "uncertain": False,
+                "reason": f"入居者向けキーワード検出: {resident_hits[:3]}",
+            }
+
+        # フォームラベルに入居者向けキーワードが1つでもあれば確実にNG
+        label_hits = [kw for kw in RESIDENT_FORM_KEYWORDS if kw in labels_combined]
+        if label_hits:
+            return {
+                "is_resident": True,
+                "uncertain": False,
+                "reason": f"フォームフィールドに入居者向けキーワード: {label_hits[:2]}",
+            }
+
+        # 1つだけ該当 → グレー（CODEX確認）
+        if len(resident_hits) == 1:
+            return {
+                "is_resident": False,
+                "uncertain": True,
+                "reason": f"要確認キーワード: {resident_hits}",
+            }
+
+        return {"is_resident": False, "uncertain": False, "reason": "内部チェック通過"}
+
+    def _codex_form_type_check(
+        self, form_url: str, page_text: str, forms: list[dict]
+    ) -> bool:
+        """
+        CODEXを使って「このフォームは入居希望者向けか、業者・採用向けか」を確認する。
+
+        Returns:
+            True  → 業者・採用向け（送信してよい）
+            False → 入居者向けまたは不明（ブロック）
+        """
+        # フォームのフィールドラベルを収集
+        field_labels = []
+        for form in forms:
+            for field in form.get("fields", []):
+                label = field.get("label", "")
+                placeholder = field.get("placeholder", "")
+                if label:
+                    field_labels.append(label)
+                if placeholder:
+                    field_labels.append(placeholder)
+
+        text_preview = page_text[:600]
+        labels_str = " / ".join(field_labels[:10]) or "（取得できず）"
+
+        prompt = (
+            f"以下のWebフォームページの情報を見て、このフォームが何のためのものかを判定してください。\n\n"
+            f"フォームURL: {form_url}\n"
+            f"ページ本文冒頭: {text_preview}\n"
+            f"フォームのフィールドラベル: {labels_str}\n\n"
+            f"【判定基準】\n"
+            f"BUSINESS — 一般的なお問い合わせ・採用・業者向け・事業者向けのフォーム\n"
+            f"RESIDENT — 入居希望者・ご家族向けのフォーム（入居相談・見学予約・資料請求等）\n"
+            f"UNCLEAR  — 判断できない\n\n"
+            f"以下のいずれか1語のみで答えてください: BUSINESS / RESIDENT / UNCLEAR"
+        )
+
+        try:
+            result = subprocess.run(
+                [
+                    "codex", "exec",
+                    "-c", 'sandbox_permissions=["disk-full-read-access"]',
+                    prompt,
+                ],
+                capture_output=True,
+                text=True,
+                timeout=120,
+                encoding="utf-8",
+                errors="replace",
+            )
+            output = (result.stdout + result.stderr).upper()
+            logger.info(f"[CODEXフォームタイプ] {form_url}: {output[:80]}")
+
+            if "BUSINESS" in output:
+                return True   # 送信OK
+            # RESIDENT / UNCLEAR / エラー → 安全方向へ（ブロック）
+            return False
+
+        except subprocess.TimeoutExpired:
+            logger.warning(f"[CODEXフォームタイプ] タイムアウト: {form_url} — ブロック")
+            return False
+        except FileNotFoundError:
+            logger.warning("[CODEXフォームタイプ] codexコマンド未インストール — ブロック（安全方向）")
+            return False
+        except Exception as e:
+            logger.warning(f"[CODEXフォームタイプ] エラー: {e} — ブロック（安全方向）")
+            return False
 
     def _select_best_form(self, forms: list[dict]) -> Optional[dict]:
         """
