@@ -619,6 +619,8 @@ def status():
 
 if __name__ == "__main__":
     import socket
+    from waitress import serve
+
     # ローカルIPを取得して表示
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -637,4 +639,5 @@ if __name__ == "__main__":
     print("  終了: Ctrl+C")
     print("=" * 50)
 
-    app.run(host="0.0.0.0", port=5050, debug=False)
+    # waitress: Flask開発サーバーより安定した本番用WSGIサーバー
+    serve(app, host="0.0.0.0", port=5050, threads=4)
