@@ -12,6 +12,34 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+# 業種別 送信者名・件名・本文コンテキスト
+INDUSTRY_CONFIG = {
+    "hoiku": {
+        "sender_name": "PonoMedia 保育採用支援",
+        "intro": "保育所・認定こども園様向けに、採用ページや求人文、応募フォームの整備を行っております、PonoMedia 保育採用支援と申します。",
+        "problem": "保育士採用では、求人票に給与や勤務時間を掲載するだけでは、求職者に「どんな園の雰囲気か」「未経験でも働けるか」「見学だけでも相談できるか」が伝わりにくいことがあります。",
+        "default_subject": "保育士採用ページの整備について",
+    },
+    "kensetsu": {
+        "sender_name": "PonoMedia 建設採用支援",
+        "intro": "工務店・建設会社様向けに、採用ページや求人文、応募フォームの整備を行っております、PonoMedia 建設採用支援と申します。",
+        "problem": "建設業の採用では、求人票に給与や勤務条件を掲載するだけでは、求職者に「どんな現場・会社か」「未経験から育ててもらえるか」「働き方改革への取組み」が伝わりにくいことがあります。",
+        "default_subject": "現場スタッフ採用ページの整備について",
+    },
+    "yakkyoku": {
+        "sender_name": "PonoMedia 薬局採用支援",
+        "intro": "調剤薬局様向けに、採用ページや求人文、応募フォームの整備を行っております、PonoMedia 薬局採用支援と申します。",
+        "problem": "薬局の採用では、求人票に給与や勤務時間を掲載するだけでは、求職者に「どんな薬局の雰囲気か」「調剤件数や業務量は」「スタッフの働きやすさ」が伝わりにくいことがあります。",
+        "default_subject": "薬剤師・薬局スタッフ採用ページの整備について",
+    },
+    "inshoku": {
+        "sender_name": "PonoMedia 飲食採用支援",
+        "intro": "飲食店様向けに、採用ページや求人文、応募フォームの整備を行っております、PonoMedia 飲食採用支援と申します。",
+        "problem": "飲食店の採用では、求人票に時給や勤務時間を掲載するだけでは、求職者に「どんなお店の雰囲気か」「シフトの融通は利くか」「未経験でも大丈夫か」が伝わりにくいことがあります。",
+        "default_subject": "飲食スタッフ採用ページの整備について",
+    },
+}
+
 # 施設種別ごとのメール内で使う自然な表現
 FACILITY_TYPE_CONTEXT = {
     "デイサービス": "デイサービスの採用では、職場の雰囲気、1日の流れ、未経験者へのサポート、見学希望への対応などを採用ページ上で整理しておくことで、応募前の不安を減らしやすくなります。",
@@ -62,17 +90,20 @@ class EmailGenerator:
         Returns:
             {"subject": str, "body": str}
         """
-        # 件名：施設名を入れて全施設で異なる件名にする（スパム判定防止）
-        base_subject = FACILITY_TYPE_SUBJECT.get(facility_type, "介護職採用ページまわりの整備について")
-        # 施設名の最初の8文字を件名に含める（長すぎる場合は省略）
-        name_prefix = facility_name[:8] if facility_name and facility_name != "不明施設" else ""
-        subject = f"{name_prefix}様 {base_subject}" if name_prefix else base_subject
+        # 業種設定を取得（industryキーがあれば業種別、なければ介護デフォルト）
+        industry = getattr(self, "_industry", None)
+        ind_cfg = INDUSTRY_CONFIG.get(industry, {}) if industry else {}
+        sender_name = ind_cfg.get("sender_name", "PonoMedia 介護採用支援")
+        intro_text  = ind_cfg.get("intro", "介護・福祉事業所様向けに、採用ページや求人文、応募フォームの整備を行っております、PonoMedia 介護採用支援と申します。")
+        problem_text = ind_cfg.get("problem", "介護職採用では、求人票に給与や勤務時間を掲載するだけでは、求職者に「どんな職場なのか」「未経験でも働けそうか」「見学だけでも相談できるのか」が伝わりにくいことがあります。")
 
-        # 施設種別ごとの本文コンテキスト
-        facility_context = FACILITY_TYPE_CONTEXT.get(
-            facility_type,
-            "介護職採用では、求人票だけでは職場の雰囲気や働き方が伝わりにくいことがあります。"
-        )
+        # 件名：施設名を入れて全施設で異なる件名にする（スパム判定防止）
+        default_subject = ind_cfg.get("default_subject") or FACILITY_TYPE_SUBJECT.get(facility_type, "採用ページまわりの整備について")
+        name_prefix = facility_name[:8] if facility_name and facility_name != "不明施設" else ""
+        subject = f"{name_prefix}様 {default_subject}" if name_prefix else default_subject
+
+        # 施設種別ごとの本文コンテキスト（介護のみ詳細あり、他業種は汎用）
+        facility_context = FACILITY_TYPE_CONTEXT.get(facility_type, "")
 
         # URL行（設定済みの場合のみ表示）
         url_lines = []
@@ -82,19 +113,19 @@ class EmailGenerator:
             url_lines.append(f"▶ サンプルサイト：{sample_site_url}")
         url_section = ("\n" + "\n".join(url_lines)) if url_lines else ""
 
+        context_block = f"\n{facility_context}\n" if facility_context else "\n"
+
         body = f"""\
 {facility_name}
 採用ご担当者様
 
 突然のご連絡失礼いたします。
 
-介護・福祉事業所様向けに、採用ページや求人文、応募フォームの整備を行っております、PonoMedia 介護採用支援と申します。
+{intro_text}
 
-介護職採用では、求人票に給与や勤務時間を掲載するだけでは、求職者に「どんな職場なのか」「未経験でも働けそうか」「見学だけでも相談できるのか」が伝わりにくいことがあります。
-
-{facility_context}
-
-弊社では現在、導入事例づくりにご協力いただける事業所様限定で、
+{problem_text}
+{context_block}
+弊社では現在、導入事例づくりにご協力いただける事業者様限定で、
 
 ・採用専用ページ
 ・求人掲載用テキスト
@@ -113,9 +144,21 @@ class EmailGenerator:
 何卒よろしくお願いいたします。
 
 --
-PonoMedia 介護採用支援
-〒（連絡先はご返信メールにて対応いたします）
+{sender_name}
+千葉県（所在地は請求があり次第ご開示いたします）
+oka.ponomedia@gmail.com
 ※ご不要の場合は本メールにご返信いただければ、以後ご連絡を差し上げません。"""
+
+        # 禁止表現が混入していないか最終チェック
+        FORBIDDEN = [
+            "スコア", "ランク", "点", "見当たりません", "ありません",
+            "課題があるかと", "採用に困って", "応募が増えます",
+            "採用できます", "保証", "必ず",
+        ]
+        for word in FORBIDDEN:
+            if word in body:
+                logger.error(f"[email_generator] 禁止表現「{word}」が本文に混入しています。送信を中止します。")
+                raise ValueError(f"禁止表現「{word}」がメール本文に含まれています")
 
         logger.debug(f"メール生成完了: {facility_name} ({facility_type})")
 
@@ -142,7 +185,10 @@ PonoMedia 介護採用支援
 何卒よろしくお願いいたします。
 
 --
-PonoMedia 介護採用支援"""
+PonoMedia 介護採用支援
+千葉県（所在地は請求があり次第ご開示いたします）
+oka.ponomedia@gmail.com
+※ご不要の場合は本メールにご返信いただければ、以後ご連絡を差し上げません。"""
 
         return {
             "subject": subject,
