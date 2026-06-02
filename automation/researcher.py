@@ -116,6 +116,35 @@ class FacilityResearcher:
         time.sleep(wait_seconds)
         return results
 
+    # HTMLではなくドキュメントファイルはスクレイピング不可
+    _SKIP_EXTENSIONS = ('.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.csv', '.zip')
+
+    def _is_allowed_by_robots(self, url: str, timeout: int = 5) -> bool:
+        """
+        robots.txt を取得して対象URLへのアクセスが許可されているか確認する。
+        取得失敗・タイムアウト時は安全側（許可）として扱う。
+        """
+        try:
+            from urllib.parse import urlparse
+            from urllib.robotparser import RobotFileParser
+            parsed = urlparse(url)
+            robots_url = f"{parsed.scheme}://{parsed.netloc}/robots.txt"
+            rp = RobotFileParser()
+            rp.set_url(robots_url)
+            # requests で取得して RobotFileParser に渡す（タイムアウト制御のため）
+            resp = requests.get(robots_url, headers=self.HEADERS, timeout=timeout)
+            if resp.status_code == 200:
+                rp.parse(resp.text.splitlines())
+                allowed = rp.can_fetch("*", url)
+                if not allowed:
+                    logger.warning(f"robots.txt で Disallow のためスキップ: {url}")
+                return allowed
+            # robots.txt が存在しない（404等）→ アクセス許可
+            return True
+        except Exception:
+            # タイムアウト・取得失敗 → 安全側（許可）として継続
+            return True
+
     def scrape_facility(self, url: str, timeout: int = 10, follow_hiring_page: bool = True) -> Optional[dict]:
         """
         施設サイトをスクレイピングして採用関連情報を抽出する。
@@ -127,6 +156,16 @@ class FacilityResearcher:
         Returns:
             抽出データのdict、エラー時はNone
         """
+        # ドキュメントファイルURLはHTMLスクレイピング不可
+        url_path = url.lower().split('?')[0]
+        if any(url_path.endswith(ext) for ext in self._SKIP_EXTENSIONS):
+            logger.warning(f"ドキュメントファイルのためスキップ: {url}")
+            return None
+
+        # robots.txt チェック（法的リスク対応）
+        if not self._is_allowed_by_robots(url):
+            return None
+
         try:
             resp = requests.get(url, headers=self.HEADERS, timeout=timeout)
             resp.raise_for_status()
@@ -162,6 +201,8 @@ class FacilityResearcher:
         emails = list(set(self.EMAIL_PATTERN.findall(resp.text)))
         # 画像ファイルや不正なメールを除外
         emails = [e for e in emails if not e.endswith((".png", ".jpg", ".gif", ".svg"))]
+        # JS/HTMLエンコードプレフィックス（u003E等）が混入したメールを除外
+        emails = [e for e in emails if not re.match(r'^u0[0-9a-fA-F]{2,3}[a-zA-Z0-9]', e)]
 
         # 電話番号を抽出
         phones = list(set(self.PHONE_PATTERN.findall(full_text)))

@@ -99,7 +99,7 @@ class EmailGenerator:
 
         # 件名：施設名を入れて全施設で異なる件名にする（スパム判定防止）
         default_subject = ind_cfg.get("default_subject") or FACILITY_TYPE_SUBJECT.get(facility_type, "採用ページまわりの整備について")
-        name_prefix = facility_name[:8] if facility_name and facility_name != "不明施設" else ""
+        name_prefix = facility_name if facility_name and facility_name != "不明施設" else ""
         subject = f"{name_prefix}様 {default_subject}" if name_prefix else default_subject
 
         # 施設種別ごとの本文コンテキスト（介護のみ詳細あり、他業種は汎用）
@@ -151,10 +151,12 @@ oka.ponomedia@gmail.com
 ※ご不要の場合は件名に「配信停止」とご記入のうえ本メールにご返信ください。以後ご連絡いたしません。"""
 
         # 禁止表現が混入していないか最終チェック
+        # ※「保証」「ありません」は「保証するものではありません」として本文中で正当使用するため除外
         FORBIDDEN = [
-            "スコア", "ランク", "点", "見当たりません", "ありません",
+            "スコア", "ランク",
+            "採用ページが見当たりません", "フォームが設置されていません",
             "課題があるかと", "採用に困って", "応募が増えます",
-            "採用できます", "保証", "必ず",
+            "採用できます", "必ず採用", "必ず応募",
         ]
         for word in FORBIDDEN:
             if word in body:
