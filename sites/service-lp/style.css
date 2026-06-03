@@ -307,12 +307,10 @@ button {
 .hero {
   position: relative;
   background-color: var(--color-primary);
-  background-image:
-    /* ドット格子パターン */
-    radial-gradient(circle, rgba(255,255,255,0.07) 1px, transparent 1px),
-    /* メイングラデーション */
-    linear-gradient(135deg, #060d26 0%, #0D1B4B 35%, #1a3a7a 65%, #0f2d6b 100%);
-  background-size: 28px 28px, 100% 100%;
+  background-image: url('hero-bg.jpg');
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
   padding: 88px 0 96px;
   overflow: hidden;
 }
@@ -330,9 +328,10 @@ button {
 .hero-gradient-overlay {
   position: absolute;
   inset: 0;
-  /* 上下のフェード */
+  /* 写真背景に合わせた暗部オーバーレイ（テキスト視認性確保） */
   background:
-    linear-gradient(180deg, rgba(6,13,38,0.5) 0%, transparent 30%, transparent 70%, rgba(6,13,38,0.4) 100%);
+    linear-gradient(105deg, rgba(6,13,38,0.72) 0%, rgba(6,13,38,0.45) 55%, rgba(6,13,38,0.25) 100%),
+    linear-gradient(180deg, rgba(6,13,38,0.3) 0%, transparent 40%, rgba(6,13,38,0.5) 100%);
   pointer-events: none;
 }
 
