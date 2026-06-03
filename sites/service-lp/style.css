@@ -307,9 +307,12 @@ button {
 .hero {
   position: relative;
   background-color: var(--color-primary);
-  background-image: url('hero-bg.jpg');
-  background-size: cover;
-  background-position: center 30%;
+  background-image:
+    /* ドット格子パターン */
+    radial-gradient(circle, rgba(255,255,255,0.07) 1px, transparent 1px),
+    /* メイングラデーション */
+    linear-gradient(135deg, #060d26 0%, #0D1B4B 35%, #1a3a7a 65%, #0f2d6b 100%);
+  background-size: 28px 28px, 100% 100%;
   padding: 88px 0 96px;
   overflow: hidden;
 }
@@ -317,20 +320,69 @@ button {
 .hero-photo-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    130deg,
-    rgba(13, 27, 75, 0.88) 0%,
-    rgba(13, 27, 75, 0.75) 50%,
-    rgba(30, 95, 173, 0.70) 100%
-  );
+  /* 左上：深紺の暗部 / 右側：温かみのある光 */
+  background:
+    radial-gradient(ellipse at 85% 40%, rgba(255, 160, 50, 0.12) 0%, transparent 55%),
+    radial-gradient(ellipse at 15% 80%, rgba(30, 95, 173, 0.25) 0%, transparent 50%);
   pointer-events: none;
 }
 
 .hero-gradient-overlay {
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse at 75% 50%, rgba(255,209,102,0.08) 0%, transparent 60%);
+  /* 上下のフェード */
+  background:
+    linear-gradient(180deg, rgba(6,13,38,0.5) 0%, transparent 30%, transparent 70%, rgba(6,13,38,0.4) 100%);
   pointer-events: none;
+}
+
+/* 装飾要素 */
+.hero-deco {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.hero-deco-circle {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.hero-deco-circle-1 {
+  width: 520px;
+  height: 520px;
+  top: -160px;
+  right: -100px;
+  background: radial-gradient(circle at center, rgba(255,160,50,0.06) 0%, transparent 70%);
+  animation: heroRotate 20s linear infinite;
+}
+
+.hero-deco-circle-2 {
+  width: 320px;
+  height: 320px;
+  bottom: -80px;
+  left: -60px;
+  background: radial-gradient(circle at center, rgba(30,95,173,0.10) 0%, transparent 70%);
+  border-color: rgba(255,255,255,0.04);
+  animation: heroRotate 28s linear infinite reverse;
+}
+
+.hero-deco-line {
+  position: absolute;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+  height: 1px;
+  width: 100%;
+}
+
+.hero-deco-line-1 { top: 35%; }
+.hero-deco-line-2 { top: 65%; opacity: 0.5; }
+
+@keyframes heroRotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 .hero-inner {
