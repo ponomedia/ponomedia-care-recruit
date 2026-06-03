@@ -1,509 +1,446 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>建設・工務店スタッフ採用まるごと導線パック | 採用ページ・求人文・応募フォームをまとめて整える</title>
-  <meta name="description" content="工務店・建設会社の採用ページ・求人文・応募フォーム・SNS素材まで、導入事例募集中につき55,000円でまとめて整えます。まずは無料で採用ページまわりを確認します。">
-  <meta property="og:title" content="建設・工務店スタッフ採用まるごと導線パック">
-  <meta property="og:description" content="採用ページ・求人文・応募フォーム・SNS素材まで、導入事例募集中につき55,000円でまとめて作ります。">
-  <meta property="og:type" content="website">
-  <meta property="og:locale" content="ja_JP">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PonoMedia 建設採用支援｜採用ページ・求人原稿・応募フォームを55,000円で</title>
+<meta name="description" content="工務店・建設会社の採用ページ制作を55,000円（税込）でまるごとお任せ。採用専用ページ・求人原稿・応募フォームをセットで2〜3週間で公開。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#0D1B4B;--navy-800:#14245c;--navy-700:#1c2f6e;
+  --blue:#1E5FAD;--blue-600:#2a6fc4;
+  --orange:#FF6B2B;--orange-600:#ef5c1b;
+  --paper:#f7f8fb;--paper-2:#eef1f7;--card:#ffffff;
+  --line:#e2e6ef;--line-strong:#cdd4e4;
+  --ink:#0D1B4B;--ink-2:#41496b;--ink-3:#6b7490;
+  --sans:"Noto Sans JP",system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;
+  --maxw:1120px;--gut:24px;--radius:14px;--radius-sm:9px;
+  --shadow-sm:0 1px 2px rgba(13,27,75,.05),0 1px 1px rgba(13,27,75,.04);
+  --shadow-md:0 10px 30px -12px rgba(13,27,75,.18),0 2px 6px rgba(13,27,75,.06);
+  --shadow-lg:0 30px 60px -20px rgba(13,27,75,.28);
+}
+*,*::before,*::after{box-sizing:border-box;}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth;}
+body{margin:0;font-family:var(--sans);color:var(--ink-2);background:var(--paper);line-height:1.85;font-size:16px;letter-spacing:.01em;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;}
+img{max-width:100%;display:block;}
+a{color:inherit;text-decoration:none;}
+h1,h2,h3,h4{color:var(--ink);line-height:1.45;margin:0;font-weight:700;letter-spacing:.02em;}
+p{margin:0;text-wrap:pretty;}
+.tnum{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;}
+.wrap{width:100%;max-width:var(--maxw);margin:0 auto;padding:0 var(--gut);}
+.section{padding:72px 0;}
+.eyebrow{display:inline-flex;align-items:center;gap:9px;font-size:12.5px;font-weight:700;letter-spacing:.16em;color:var(--blue);text-transform:uppercase;}
+.eyebrow::before{content:"";width:22px;height:2px;background:var(--orange);border-radius:2px;}
+.section-head{max-width:720px;margin:0 0 40px;}
+.section-head h2{font-size:clamp(24px,4.6vw,33px);font-weight:900;letter-spacing:.03em;margin:14px 0 0;line-height:1.5;}
+.section-head .lead{margin-top:16px;color:var(--ink-3);font-size:15.5px;}
+.kicker-jp{color:var(--orange);}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;font-family:var(--sans);font-weight:700;letter-spacing:.03em;border-radius:10px;cursor:pointer;border:1px solid transparent;padding:15px 26px;font-size:15.5px;line-height:1;white-space:nowrap;transition:transform .15s ease,box-shadow .2s ease,background .2s ease;}
+.btn .arr{transition:transform .18s ease;}
+.btn:hover .arr{transform:translateX(3px);}
+.btn--primary{background:var(--orange);color:#fff;box-shadow:0 8px 20px -8px rgba(255,107,43,.6);}
+.btn--primary:hover{background:var(--orange-600);transform:translateY(-1px);}
+.btn--ghost{background:transparent;color:#fff;border-color:rgba(255,255,255,.45);}
+.btn--ghost:hover{background:rgba(255,255,255,.1);}
+.btn--navy{background:var(--navy);color:#fff;}
+.btn--navy:hover{background:var(--navy-700);transform:translateY(-1px);}
+.btn--sm{padding:11px 18px;font-size:14px;}
+.btn--block{width:100%;}
+.site-header{position:sticky;top:0;z-index:50;background:rgba(247,248,251,.86);backdrop-filter:saturate(160%) blur(10px);border-bottom:1px solid var(--line);}
+.header-inner{display:flex;align-items:center;justify-content:space-between;height:66px;}
+.brand{display:flex;align-items:center;gap:11px;}
+.brand-mark{width:34px;height:34px;border-radius:9px;background:var(--navy);display:grid;place-items:center;color:#fff;font-weight:900;font-size:17px;letter-spacing:0;}
+.brand-mark span{color:var(--orange);}
+.brand-name{font-weight:900;color:var(--navy);letter-spacing:.04em;font-size:16.5px;}
+.brand-sub{display:block;font-size:10.5px;font-weight:500;color:var(--ink-3);letter-spacing:.14em;line-height:1;margin-top:3px;}
+.nav{display:none;align-items:center;gap:30px;}
+.nav a{font-size:14px;font-weight:500;color:var(--ink-2);transition:color .15s;}
+.nav a:hover{color:var(--blue);}
+.header-cta{display:none;}
+@media(min-width:880px){.nav{display:flex;}.header-cta{display:inline-flex;}}
+.hero{position:relative;overflow:hidden;background:var(--navy);}
+.hero-bg{position:absolute;inset:0;z-index:0;overflow:hidden;}
+.hero-photo-img{width:100%;height:100%;object-fit:cover;object-position:center 30%;display:block;}
+.hero-overlay{position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgba(13,27,75,.75) 0%,rgba(13,27,75,.85) 55%,rgba(13,27,75,.93) 100%),radial-gradient(120% 90% at 12% 8%,rgba(30,95,173,.45),transparent 60%);}
+.hero-inner{position:relative;z-index:2;padding:64px 0 72px;}
+.hero-grid{display:grid;gap:34px;}
+.hero-eyebrow{color:#9fc0ef;}
+.hero-eyebrow::before{background:var(--orange);}
+.hero h1{color:#fff;font-weight:900;letter-spacing:.02em;font-size:clamp(29px,6.4vw,49px);line-height:1.34;margin:18px 0 0;}
+.hero h1 em{font-style:normal;color:#fff;box-decoration-break:clone;-webkit-box-decoration-break:clone;background:linear-gradient(transparent 62%,rgba(255,107,43,.85) 62%);padding:0 .08em;}
+.hero-sub{color:#cdd6ec;font-size:16px;margin-top:22px;max-width:560px;line-height:1.95;}
+.hero-actions{display:flex;flex-wrap:wrap;gap:13px;margin-top:30px;}
+.hero-note{display:flex;align-items:center;gap:8px;color:#aebbd8;font-size:13px;margin-top:18px;}
+.hero-note .dot{width:6px;height:6px;border-radius:50%;background:var(--orange);}
+.hero-trust{position:relative;z-index:2;border-top:1px solid rgba(255,255,255,.12);margin-top:46px;padding-top:26px;display:grid;grid-template-columns:repeat(2,1fr);gap:20px 14px;}
+.trust-item{color:#dbe3f4;}
+.trust-item b{display:block;color:#fff;font-weight:900;font-size:18px;letter-spacing:.04em;}
+.trust-item span{font-size:12.5px;color:#9fabcb;}
+@media(min-width:760px){.hero-inner{padding:84px 0 90px;}.hero-trust{grid-template-columns:repeat(4,1fr);}}
+.kpi-section{background:var(--paper-2);border-top:1px solid var(--line);border-bottom:1px solid var(--line);}
+.kpi-grid{display:grid;grid-template-columns:1fr;gap:16px;}
+@media(min-width:560px){.kpi-grid{grid-template-columns:repeat(2,1fr);}}
+@media(min-width:1000px){.kpi-grid{grid-template-columns:repeat(4,1fr);gap:18px;}}
+.kpi-card{position:relative;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:24px 22px 22px;display:flex;flex-direction:column;box-shadow:var(--shadow-sm);transition:border-color .2s,box-shadow .2s,transform .2s;}
+.kpi-card:hover{border-color:var(--line-strong);box-shadow:var(--shadow-md);transform:translateY(-2px);}
+.kpi-card::before{content:"";position:absolute;left:22px;right:22px;top:0;height:3px;background:var(--orange);border-radius:0 0 3px 3px;opacity:.9;}
+.kpi-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+.kpi-cat{font-size:12px;font-weight:700;letter-spacing:.1em;color:var(--blue);}
+.kpi-idx{font-size:11px;font-weight:700;color:var(--ink-3);font-variant-numeric:tabular-nums;letter-spacing:.05em;}
+.kpi-figure{display:flex;align-items:baseline;gap:5px;flex-wrap:wrap;color:var(--navy);min-height:58px;}
+.kpi-num{font-weight:900;font-size:46px;line-height:1;letter-spacing:.01em;font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;}
+.kpi-num .sep{font-size:30px;font-weight:700;padding:0 1px;color:var(--navy-700);}
+.kpi-unit{font-size:15px;font-weight:700;color:var(--ink-2);letter-spacing:.02em;line-height:1;}
+.kpi-unit.lead-unit{margin-right:-1px;}
+.kpi-desc{margin-top:16px;padding-top:16px;border-top:1px solid var(--line);font-size:13.5px;color:var(--ink-2);line-height:1.75;}
+.kpi-source{margin-top:26px;font-size:12px;color:var(--ink-3);}
+.svc-grid{display:grid;grid-template-columns:1fr;gap:18px;}
+@media(min-width:760px){.svc-grid{grid-template-columns:repeat(3,1fr);}}
+.svc-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow-sm);display:flex;flex-direction:column;}
+.svc-img{aspect-ratio:16/10;background:var(--paper-2);display:flex;align-items:center;justify-content:center;font-size:36px;}
+.svc-body{padding:24px 22px 26px;display:flex;flex-direction:column;flex:1;}
+.svc-num{font-size:12px;font-weight:700;letter-spacing:.12em;color:var(--orange);}
+.svc-card h3{font-size:18px;font-weight:900;letter-spacing:.03em;margin:10px 0 0;}
+.svc-card p{font-size:14px;color:var(--ink-2);margin-top:12px;line-height:1.8;}
+.svc-list{list-style:none;padding:0;margin:18px 0 0;display:flex;flex-direction:column;gap:9px;}
+.svc-list li{position:relative;padding-left:24px;font-size:13.5px;color:var(--ink-2);}
+.svc-list li::before{content:"";position:absolute;left:0;top:8px;width:14px;height:14px;border-radius:50%;background:rgba(30,95,173,.12);}
+.svc-list li::after{content:"";position:absolute;left:4px;top:11px;width:5px;height:8px;border-right:2px solid var(--blue);border-bottom:2px solid var(--blue);transform:rotate(40deg);}
+.pricing-section{background:var(--navy);color:#fff;position:relative;overflow:hidden;}
+.pricing-section .section-head h2{color:#fff;}
+.pricing-section .eyebrow{color:#9fc0ef;}
+.pricing-section .section-head .lead{color:#b9c4e0;}
+.pricing-glow{position:absolute;z-index:0;width:520px;height:520px;right:-160px;top:-120px;background:radial-gradient(circle,rgba(30,95,173,.45),transparent 65%);pointer-events:none;}
+.price-grid{position:relative;z-index:1;display:grid;grid-template-columns:1fr;gap:18px;align-items:stretch;}
+@media(min-width:860px){.price-grid{grid-template-columns:1.15fr .85fr;}}
+.price-main{background:#fff;color:var(--ink-2);border-radius:18px;padding:32px 30px 30px;box-shadow:var(--shadow-lg);position:relative;}
+.price-badge{position:absolute;top:-12px;left:30px;background:var(--orange);color:#fff;font-size:12px;font-weight:700;letter-spacing:.08em;padding:7px 15px;border-radius:999px;box-shadow:0 6px 16px -6px rgba(255,107,43,.7);}
+.price-pkg{font-size:13px;font-weight:700;color:var(--blue);letter-spacing:.08em;}
+.price-title{font-size:20px;font-weight:900;color:var(--navy);margin:6px 0 0;letter-spacing:.03em;}
+.price-amount{display:flex;align-items:baseline;gap:8px;margin:22px 0 4px;color:var(--navy);}
+.price-amount .yen{font-size:22px;font-weight:900;}
+.price-amount .num{font-size:56px;font-weight:900;line-height:.9;font-variant-numeric:tabular-nums;letter-spacing:.01em;}
+.price-amount .tax{font-size:14px;font-weight:700;color:var(--ink-3);}
+.price-amount .unit{font-size:18px;font-weight:900;align-self:flex-end;padding-bottom:6px;}
+.price-oneoff{font-size:13px;color:var(--ink-3);}
+.price-incl{list-style:none;margin:22px 0 0;padding:22px 0 0;border-top:1px solid var(--line);display:grid;gap:11px;}
+.price-incl li{position:relative;padding-left:26px;font-size:14.5px;color:var(--ink);font-weight:500;}
+.price-incl li::before{content:"";position:absolute;left:0;top:1px;width:18px;height:18px;border-radius:50%;background:var(--orange);}
+.price-incl li::after{content:"";position:absolute;left:6px;top:5px;width:5px;height:9px;border-right:2px solid #fff;border-bottom:2px solid #fff;transform:rotate(40deg);}
+.price-main .btn{margin-top:26px;}
+.price-compare{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.16);border-radius:18px;padding:30px 28px;display:flex;flex-direction:column;}
+.price-compare h3{color:#fff;font-size:16px;font-weight:700;letter-spacing:.04em;}
+.compare-rows{margin-top:22px;display:flex;flex-direction:column;gap:14px;flex:1;}
+.compare-row{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:16px 18px;}
+.compare-row.is-us{background:rgba(255,107,43,.12);border-color:rgba(255,107,43,.5);}
+.compare-label{font-size:12.5px;color:#aebbd8;letter-spacing:.04em;}
+.compare-row.is-us .compare-label{color:#ffc9ad;}
+.compare-val{display:flex;align-items:baseline;gap:6px;margin-top:6px;color:#fff;}
+.compare-val .num{font-size:30px;font-weight:900;font-variant-numeric:tabular-nums;letter-spacing:.01em;}
+.compare-val .un{font-size:13px;font-weight:700;color:#cdd6ec;}
+.compare-note{margin-top:18px;font-size:12px;color:#9fabcb;line-height:1.7;}
+.flow-grid{display:grid;grid-template-columns:1fr;gap:14px;}
+@media(min-width:680px){.flow-grid{grid-template-columns:repeat(2,1fr);}}
+@media(min-width:1000px){.flow-grid{grid-template-columns:repeat(4,1fr);}}
+.flow-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:24px 22px;box-shadow:var(--shadow-sm);}
+.flow-step{width:38px;height:38px;border-radius:10px;background:var(--navy);color:#fff;display:grid;place-items:center;font-weight:900;font-size:16px;font-variant-numeric:tabular-nums;}
+.flow-card h3{font-size:16px;font-weight:900;letter-spacing:.03em;margin:16px 0 0;}
+.flow-card p{font-size:13.5px;color:var(--ink-2);margin-top:9px;line-height:1.75;}
+.flow-when{display:inline-block;margin-top:14px;font-size:11.5px;font-weight:700;color:var(--blue);background:rgba(30,95,173,.08);padding:4px 10px;border-radius:6px;letter-spacing:.04em;}
+.faq-section{background:var(--paper-2);border-top:1px solid var(--line);}
+.faq-list{max-width:820px;margin:0 auto;display:flex;flex-direction:column;gap:12px;}
+.faq{background:var(--card);border:1px solid var(--line);border-radius:var(--radius-sm);overflow:hidden;box-shadow:var(--shadow-sm);}
+.faq summary{list-style:none;cursor:pointer;padding:20px 22px;display:flex;align-items:center;gap:14px;font-weight:700;color:var(--navy);font-size:15px;letter-spacing:.02em;}
+.faq summary::-webkit-details-marker{display:none;}
+.faq summary .q{flex:none;width:26px;height:26px;border-radius:7px;background:rgba(30,95,173,.1);color:var(--blue);display:grid;place-items:center;font-weight:900;font-size:13px;}
+.faq summary .ttl{flex:1;}
+.faq summary .chev{flex:none;width:11px;height:11px;border-right:2px solid var(--ink-3);border-bottom:2px solid var(--ink-3);transform:rotate(45deg);transition:transform .2s;margin-right:4px;}
+.faq[open] summary .chev{transform:rotate(-135deg);}
+.faq .faq-body{padding:0 22px 20px 62px;font-size:14px;color:var(--ink-2);line-height:1.85;}
+.cta-section{position:relative;overflow:hidden;background:var(--navy);color:#fff;}
+.cta-overlay{position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgba(13,27,75,.86),rgba(13,27,75,.94));}
+.cta-photo-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;}
+.cta-inner{position:relative;z-index:2;text-align:center;padding:74px 0;}
+.cta-inner h2{color:#fff;font-size:clamp(24px,5vw,36px);font-weight:900;letter-spacing:.03em;line-height:1.5;}
+.cta-inner p{color:#c4cee6;margin:18px auto 0;max-width:520px;font-size:15.5px;}
+.cta-actions{display:flex;flex-wrap:wrap;gap:13px;justify-content:center;margin-top:32px;}
+.cta-mini{margin-top:20px;color:#9fabcb;font-size:13px;}
+.site-footer{background:#0a1539;color:#aab4d2;padding:48px 0 30px;}
+.footer-top{display:grid;grid-template-columns:1fr;gap:28px;}
+@media(min-width:760px){.footer-top{grid-template-columns:1.4fr 1fr 1fr;}}
+.footer-brand .brand-name{color:#fff;}
+.footer-brand p{margin-top:14px;font-size:13px;color:#8d99bd;max-width:320px;line-height:1.8;}
+.footer-col h4{color:#fff;font-size:13px;letter-spacing:.08em;font-weight:700;}
+.footer-col ul{list-style:none;padding:0;margin:14px 0 0;display:flex;flex-direction:column;gap:10px;}
+.footer-col a{font-size:13.5px;color:#aab4d2;transition:color .15s;}
+.footer-col a:hover{color:#fff;}
+.footer-bottom{margin-top:38px;padding-top:22px;border-top:1px solid rgba(255,255,255,.1);display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;font-size:12px;color:#7e8aae;}
+.mobile-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:rgba(255,255,255,.94);backdrop-filter:blur(8px);border-top:1px solid var(--line);padding:11px 16px calc(11px + env(safe-area-inset-bottom));display:flex;gap:10px;box-shadow:0 -6px 20px -12px rgba(13,27,75,.3);}
+.mobile-cta .btn{flex:1;}
+.mobile-cta .price-tag{display:flex;flex-direction:column;justify-content:center;line-height:1.2;}
+.mobile-cta .price-tag b{color:var(--navy);font-weight:900;font-size:16px;font-variant-numeric:tabular-nums;}
+.mobile-cta .price-tag span{font-size:10px;color:var(--ink-3);}
+@media(min-width:880px){.mobile-cta{display:none;}}
+body{padding-bottom:72px;}
+@media(min-width:880px){body{padding-bottom:0;}}
+</style>
 </head>
 <body>
-
-  <!-- Header -->
-  <header class="site-header">
-    <div class="container">
-      <div class="header-inner">
-        <div class="logo">
-          <span class="logo-mark">P</span>
-          <span class="logo-text">PonoMedia <span class="logo-sub">建設採用ページ制作・支援</span></span>
-        </div>
-        <a href="#contact" class="btn btn-header">無料診断を依頼する</a>
-      </div>
-    </div>
-  </header>
-
-  <!-- 1. FV / Hero -->
-  <section class="hero" id="top">
-    <div class="hero-bg"></div>
-    <div class="container">
-      <div class="hero-inner">
-        <div class="hero-badge">工務店・建設会社専門 採用ページ制作・応募導線整備</div>
-        <h1 class="hero-title">
-          現場スタッフ採用、<br>
-          <span class="hero-title-accent">求人票だけで<br class="sp-only">終わっていませんか？</span>
-        </h1>
-        <p class="hero-sub">
-          採用ページ・求人文・応募フォーム・SNS素材まで、<br>
-          <strong>導入事例募集中につき55,000円（税込）</strong>でまとめて作ります。
-        </p>
-        <div class="hero-cta">
-          <a href="#contact" class="btn btn-primary btn-large">無料で採用導線を診断する</a>
-        </div>
-        <p class="hero-note">※ 採用や応募を保証するサービスではありません。</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- 2. 課題セクション -->
-  <section class="section section-problem" id="problem">
-    <div class="container">
-      <div class="section-header">
-        <div class="section-label">こんなお悩みありませんか？</div>
-        <h2 class="section-title">求人票だけでは、<br>働くイメージまで伝えきれません。</h2>
-        <p class="section-desc">
-          求人サイトに掲載しても応募が来ない。<br class="pc-only">
-          応募があっても、面接前に辞退されてしまう。<br>
-          その原因のひとつは、求職者が応募前に<br class="pc-only">
-          「どんな現場・会社なのか」「未経験でも育ててもらえるか」「働き方改革への取組みはどうか」<br class="pc-only">
-          を判断できる情報が少ないことにあります。
-        </p>
-      </div>
-      <div class="card-grid card-grid-3">
-        <div class="problem-card">
-          <div class="problem-icon">🏗️</div>
-          <h3>会社の雰囲気・現場の実態が<br>求職者に伝わらない</h3>
-          <p>給与や勤務地だけでは「どんな会社なのか」「職場の人間関係は」が判断できません。採用ページで現場の雰囲気や社風を丁寧に伝えることが応募につながります。</p>
-        </div>
-        <div class="problem-card">
-          <div class="problem-icon">📱</div>
-          <h3>SNS採用を始めたくても<br>何を発信すればいいかわからない</h3>
-          <p>InstagramやX（旧Twitter）で建設会社の採用発信をする企業が増えていますが、現場業務の合間にコンテンツを作り続けることは大きな負担です。</p>
-        </div>
-        <div class="problem-card">
-          <div class="problem-icon">📝</div>
-          <h3>応募フォームがなく<br>問い合わせへのハードルが高い</h3>
-          <p>「電話してください」だけでは、応募を検討している若手や転職者が最初の一歩を踏み出しにくい状況です。フォームがあることで問い合わせ率が上がります。</p>
-        </div>
-        <div class="problem-card">
-          <div class="problem-icon">💬</div>
-          <h3>問い合わせへの返信対応が<br>後回しになってしまう</h3>
-          <p>現場業務が忙しい中で問い合わせ対応が遅れると、応募意欲の高い求職者が他社へ流れてしまうことがあります。</p>
-        </div>
-        <div class="problem-card">
-          <div class="problem-icon">🔧</div>
-          <h3>採用ページを作りたいけれど、<br>費用も時間もかけられない</h3>
-          <p>採用ページの必要性は感じていても、外注すると高額になり、自分たちで作る時間もない。そんな会社向けに、必要な内容を絞って整えます。</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 3. サービス内容 -->
-  <section class="section section-service" id="service">
-    <div class="container">
-      <div class="section-header">
-        <div class="section-label">サービス内容</div>
-        <h2 class="section-title">応募・問い合わせにつながるための<br>6つの仕組みをまとめて整えます</h2>
-        <p class="section-desc">
-          求職者が「求人を見て、会社を知り、応募・見学を検討する」までの流れを整えるために、<br class="pc-only">
-          必要な制作物をパッケージにしました。
-        </p>
-      </div>
-      <div class="card-grid card-grid-3">
-        <div class="service-card">
-          <div class="service-num">01</div>
-          <div class="service-icon">🖥️</div>
-          <h3>採用LP<br>（採用専用ページ）</h3>
-          <p>会社の社風・現場環境・仕事内容・スタッフの声などを伝える採用専用ページを制作します。求人票だけでは伝えきれない情報を補います。</p>
-        </div>
-        <div class="service-card">
-          <div class="service-num">02</div>
-          <div class="service-icon">📄</div>
-          <h3>求人掲載用テキスト<br>（求人原稿）</h3>
-          <p>Indeed・ハローワーク等に掲載するための求人原稿を整えます。仕事内容・勤務条件・会社の魅力が伝わる文章に整理します。</p>
-        </div>
-        <div class="service-card">
-          <div class="service-num">03</div>
-          <div class="service-icon">✉️</div>
-          <h3>応募・見学フォーム<br>（受付フォーム）</h3>
-          <p>Googleフォームなどを活用し、応募・見学希望・問い合わせを受け付けるフォームを設定します。担当者が確認しやすい形に整えます。</p>
-        </div>
-        <div class="service-card">
-          <div class="service-num">04</div>
-          <div class="service-icon">✏️</div>
-          <h3>求人文改善<br>（伝わる文章への整理）</h3>
-          <p>既存の求人文を見直し、求職者に伝わりやすい表現に整えます。条件だけでなく、働くイメージや職場の安心感が伝わる文章を目指します。</p>
-        </div>
-        <div class="service-card">
-          <div class="service-num">05</div>
-          <div class="service-icon">🖼️</div>
-          <h3>SNS画像素材<br>（採用投稿・告知用）</h3>
-          <p>Instagram・X等の採用告知画像を制作します。「スタッフ募集中」「未経験歓迎」などをビジュアルで発信できます。</p>
-        </div>
-        <div class="service-card">
-          <div class="service-num">06</div>
-          <div class="service-icon">💌</div>
-          <h3>返信テンプレート<br>（応募・見学対応）</h3>
-          <p>応募・見学問い合わせへの返信メールやLINE文面のテンプレートを作成します。担当者がすぐに使える形に整えます。</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 4. 料金 -->
-  <section class="section section-price" id="price">
-    <div class="container">
-      <div class="section-header">
-        <div class="section-label">料金</div>
-        <h2 class="section-title">導入事例募集中<br>まるごとパック</h2>
-        <p class="section-desc">
-          現在、導入事例づくりにご協力いただける建設・工務店様限定で、<br>
-          特別価格にてご提供しています。<br>
-          納品した文章・画像・ページは、貴社の採用活動にご利用いただけます。<br>
-          <small>※ 共通テンプレート・制作ノウハウ部分は除きます。</small>
-        </p>
-      </div>
-      <div class="price-card">
-        <div class="price-badge">導入事例募集中特別価格</div>
-        <div class="price-main">
-          <span class="price-amount">¥50,000</span>
-          <span class="price-tax">（税込 ¥55,000）</span>
-        </div>
-        <div class="price-note-small">※ 上記の制作物をすべて含む一括価格です</div>
-        <div class="price-divider"></div>
-        <h3 class="price-includes-title">含まれるもの</h3>
-        <ul class="price-list">
-          <li><span class="check">✓</span> 採用LP（レスポンシブ対応HTMLページ）× 1本</li>
-          <li><span class="check">✓</span> 求人掲載用テキスト原稿 × 1職種分</li>
-          <li><span class="check">✓</span> 応募・見学受付フォーム × 1種</li>
-          <li><span class="check">✓</span> 求人文の改善・書き直し × 1回</li>
-          <li><span class="check">✓</span> SNS採用投稿画像（テンプレ形式）× 3枚</li>
-          <li><span class="check">✓</span> 応募・見学問い合わせ返信テンプレ × 2種</li>
-          <li><span class="check">✓</span> 公開後1ヶ月間の軽微な修正対応<br><small style="font-weight:400;color:#666;">（例：文章修正、電話番号変更、求人条件の一部修正など）</small></li>
-        </ul>
-        <div class="price-cta">
-          <a href="#contact" class="btn btn-primary btn-large">無料診断を依頼する</a>
-        </div>
-        <p class="price-caution">※ 採用・応募の成果を保証するものではありません。成果報酬型のサービスではありません。</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- 5. できること・できないこと -->
-  <section class="section section-scope" id="scope">
-    <div class="container">
-      <div class="section-header">
-        <div class="section-label">対応範囲</div>
-        <h2 class="section-title">できること・<br>できないこと</h2>
-        <p class="section-desc">
-          安心してご相談いただくために、対応できる範囲を事前に明確にしています。
-        </p>
-      </div>
-      <div class="scope-grid">
-        <div class="scope-col scope-can">
-          <h3 class="scope-title scope-title-can">できること</h3>
-          <ul class="scope-list">
-            <li>採用ページ（LP）の設計・制作・公開</li>
-            <li>求人文・掲載用テキストの作成・改善</li>
-            <li>Googleフォームを使った応募・見学受付フォームの設定</li>
-            <li>SNS採用投稿用の画像テンプレ制作</li>
-            <li>応募・見学問い合わせへの返信テンプレート作成</li>
-            <li>公開後1ヶ月間の軽微な修正対応</li>
-            <li>ヒアリングをもとにした会社の強み・魅力整理</li>
-          </ul>
-        </div>
-        <div class="scope-col scope-cannot">
-          <h3 class="scope-title scope-title-cannot">できないこと</h3>
-          <ul class="scope-list">
-            <li>採用・応募数の保証・コミット</li>
-            <li>求人サイトへの掲載代行・掲載費用の負担</li>
-            <li>求職者の紹介・あっせん</li>
-            <li>SNSアカウントの運用・投稿代行</li>
-            <li>現場写真の撮影・動画制作</li>
-            <li>採用面接・選考プロセスの代行</li>
-            <li>雇用契約書・労務書類の作成</li>
-            <li>大規模なシステム開発・データベース構築</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 6. 制作の流れ -->
-  <section class="section section-flow" id="flow">
-    <div class="container">
-      <div class="section-header">
-        <div class="section-label">ご利用の流れ</div>
-        <h2 class="section-title">制作の流れ</h2>
-        <p class="section-desc">
-          お問い合わせから公開まで、通常2〜3週間を目安にしています。<br>
-          素材がそろっている場合は、より短期間で公開できる場合もあります。
-        </p>
-      </div>
-      <div class="flow-steps">
-        <div class="flow-step">
-          <div class="flow-num">01</div>
-          <div class="flow-content">
-            <h3>お問い合わせ</h3>
-            <p>フォームよりご連絡ください。現在の採用状況や、採用ページ・求人票に関するお悩みを簡単にお知らせください。</p>
-            <div class="flow-duration">所要時間: 5分程度</div>
-          </div>
-        </div>
-        <div class="flow-arrow">▼</div>
-        <div class="flow-step">
-          <div class="flow-num">02</div>
-          <div class="flow-content">
-            <h3>無料ヒアリング</h3>
-            <p>オンラインまたはお電話にて、会社の特徴・募集職種・仕事内容・現在の採用状況などをお聞きします。</p>
-            <div class="flow-duration">所要時間: 30〜60分</div>
-          </div>
-        </div>
-        <div class="flow-arrow">▼</div>
-        <div class="flow-step">
-          <div class="flow-num">03</div>
-          <div class="flow-content">
-            <h3>原稿・素材の作成</h3>
-            <p>ヒアリング内容をもとに、求人文・LP原稿・SNS画像・返信テンプレートを作成します。初稿をご確認いただき、必要に応じて修正します。</p>
-            <div class="flow-duration">目安: 1〜2週間</div>
-          </div>
-        </div>
-        <div class="flow-arrow">▼</div>
-        <div class="flow-step">
-          <div class="flow-num">04</div>
-          <div class="flow-content">
-            <h3>サイト制作・確認</h3>
-            <p>採用LPを制作し、確認用URLでご確認いただきます。内容を調整したうえで、本番公開の準備を進めます。</p>
-            <div class="flow-duration">目安: 1週間</div>
-          </div>
-        </div>
-        <div class="flow-arrow">▼</div>
-        <div class="flow-step">
-          <div class="flow-num">05</div>
-          <div class="flow-content">
-            <h3>公開・納品・改善</h3>
-            <p>採用LPを公開し、求人文・SNS画像・返信テンプレートなどの制作物を納品します。公開後1ヶ月間は、軽微な修正に対応します。</p>
-            <div class="flow-duration">公開後1ヶ月フォロー付き</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 7. FAQ -->
-  <section class="section section-faq" id="faq">
-    <div class="container">
-      <div class="section-header">
-        <div class="section-label">よくある質問</div>
-        <h2 class="section-title">FAQ</h2>
-      </div>
-      <div class="faq-list">
-        <div class="faq-item">
-          <button class="faq-question" aria-expanded="false">
-            <span class="faq-q-mark">Q</span>
-            <span class="faq-q-text">採用が決まることは保証されますか？</span>
-            <span class="faq-arrow">▼</span>
-          </button>
-          <div class="faq-answer">
-            <div class="faq-a-inner">
-              <span class="faq-a-mark">A</span>
-              <p>いいえ、採用や応募数を保証するサービスではありません。本サービスは、求人票だけでは伝わりにくい会社の雰囲気や仕事内容、未経験者へのサポートなどを整理し、応募・問い合わせにつながる導線を整えるサービスです。</p>
-            </div>
-          </div>
-        </div>
-        <div class="faq-item">
-          <button class="faq-question" aria-expanded="false">
-            <span class="faq-q-mark">Q</span>
-            <span class="faq-q-text">55,000円以外に追加費用はかかりますか？</span>
-            <span class="faq-arrow">▼</span>
-          </button>
-          <div class="faq-answer">
-            <div class="faq-a-inner">
-              <span class="faq-a-mark">A</span>
-              <p>基本プラン内の内容であれば、追加費用はかかりません。ただし、職種ページの追加、写真撮影、動画制作、広告運用、SNS運用代行などは対象外です。必要な場合は別途ご相談となります。</p>
-            </div>
-          </div>
-        </div>
-        <div class="faq-item">
-          <button class="faq-question" aria-expanded="false">
-            <span class="faq-q-mark">Q</span>
-            <span class="faq-q-text">ITが苦手でも大丈夫ですか？</span>
-            <span class="faq-arrow">▼</span>
-          </button>
-          <div class="faq-answer">
-            <div class="faq-a-inner">
-              <span class="faq-a-mark">A</span>
-              <p>はい、大丈夫です。ヒアリング内容をもとに、こちらで文章作成・ページ制作・フォーム設定まで行います。公開後も、軽微な修正は1ヶ月間対応します。</p>
-            </div>
-          </div>
-        </div>
-        <div class="faq-item">
-          <button class="faq-question" aria-expanded="false">
-            <span class="faq-q-mark">Q</span>
-            <span class="faq-q-text">完成した採用ページは自分たちで更新できますか？</span>
-            <span class="faq-arrow">▼</span>
-          </button>
-          <div class="faq-answer">
-            <div class="faq-a-inner">
-              <span class="faq-a-mark">A</span>
-              <p>基本プランでは、更新しやすさよりも低価格・短納期での制作を優先しています。求人条件の変更など軽微な修正は、公開後1ヶ月以内であれば対応します。継続的な更新をご希望の場合は、月額サポートをご案内できます。</p>
-            </div>
-          </div>
-        </div>
-        <div class="faq-item">
-          <button class="faq-question" aria-expanded="false">
-            <span class="faq-q-mark">Q</span>
-            <span class="faq-q-text">どのような会社が対象ですか？</span>
-            <span class="faq-arrow">▼</span>
-          </button>
-          <div class="faq-answer">
-            <div class="faq-a-inner">
-              <span class="faq-a-mark">A</span>
-              <p>工務店、電気工事、管工事、内装工事、塗装工事など、建設・施工系の会社を対象としています。特に、採用ページがまだない会社や、求人票だけでは会社の雰囲気を伝えきれていない会社に向いています。</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 代表者挨拶 -->
-  <section class="section section-greeting" id="greeting">
-    <div class="container">
-      <div class="section-header">
-        <div class="section-label">代表者挨拶</div>
-        <h2 class="section-title">はじめまして、<br>PonoMedia 代表の岡原です。</h2>
-      </div>
-      <div class="greeting-inner">
-        <div class="greeting-body">
-          <p>私には、障害者手帳1級を持つ祖父がいます。</p>
-          <p>祖父が安心して日常生活を送れているのは、さまざまな職種の方々が支えてくださっているからです。建設・インフラの仕事も、そうした生活の基盤を作っている仕事のひとつだと感じています。</p>
-          <p>一方で、建設業界では若手の人手不足が深刻な課題になっています。仕事の魅力や職場の雰囲気が求職者にうまく伝わらず、採用に苦労している会社も少なくありません。</p>
-          <p>少しでも、建設会社・工務店の魅力が正しく求職者に伝わるように。<br>その思いから、採用ページ・求人文・応募フォームなどをまとめて整えるサービスを始めました。</p>
-          <p>難しい準備は必要ありません。<br>まずは、現在の採用状況をそのままお聞かせください。</p>
-          <div class="greeting-profile">
-            <div class="greeting-profile-name">岡原</div>
-            <div class="greeting-profile-meta">慶應義塾大学在学中<br>PonoMedia 代表</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 8. Final CTA -->
-  <section class="section section-final-cta" id="contact">
-    <div class="container">
-      <div class="final-cta-inner">
-        <div class="section-label section-label-white">無料診断</div>
-        <h2 class="final-cta-title">まずは現在の採用ページ・求人文を<br>無料で確認します。</h2>
-        <p class="final-cta-desc">
-          現在の求人票、採用ページ、応募フォームの状況を確認し、<br class="pc-only">
-          改善できそうなポイントを無料でお伝えします。<br>
-          相談・診断のみで費用は発生しません。
-        </p>
-        <div class="contact-form-wrap">
-          <form class="contact-form" id="contactForm" onsubmit="handleFormSubmit(event)">
-            <input type="hidden" name="_replyto" value="oka.ponomedia@gmail.com">
-            <input type="hidden" name="_subject" value="【建設スタッフ採用まるごと導線パック】無料診断のご依頼">
-            <div class="form-group">
-              <label for="facility-name">会社名 <span class="required">必須</span></label>
-              <input type="text" id="facility-name" name="facility-name" placeholder="例：株式会社〇〇工務店" required>
-            </div>
-            <div class="form-group">
-              <label for="contact-name">担当者名 <span class="required">必須</span></label>
-              <input type="text" id="contact-name" name="contact-name" placeholder="例：田中 太郎" required>
-            </div>
-            <div class="form-group">
-              <label for="contact-email">メールアドレス <span class="required">必須</span></label>
-              <input type="email" id="contact-email" name="contact-email" placeholder="例：tanaka@example-kensetsu.jp" required>
-            </div>
-            <div class="form-group">
-              <label for="contact-phone">電話番号</label>
-              <input type="tel" id="contact-phone" name="contact-phone" placeholder="例：047-000-0000">
-            </div>
-            <div class="form-group">
-              <label for="contact-message">現在の採用状況・お悩み（任意）</label>
-              <textarea id="contact-message" name="contact-message" rows="4" placeholder="例：求人サイトに掲載しているが応募が来ない。採用ページがなく、会社の雰囲気や仕事内容を十分に伝えられていない。"></textarea>
-            </div>
-            <div class="form-submit">
-              <button type="submit" class="btn btn-primary btn-large btn-full">無料診断を依頼する</button>
-            </div>
-            <p class="form-caution">※ 採用・応募を保証するものではありません。まずは現状確認と改善提案をお届けします。</p>
-          </form>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 特定商取引法に基づく表記 -->
-  <section class="section section-legal" id="tokushoho">
-    <div class="container">
-      <div class="section-header">
-        <h2 class="section-title" style="font-size:1.4rem;">特定商取引法に基づく表記</h2>
-      </div>
-      <div class="legal-table-wrap">
-        <table class="legal-table">
-          <tbody>
-            <tr><th>事業者名</th><td>PonoMedia（個人事業）</td></tr>
-            <tr><th>代表者</th><td>岡原</td></tr>
-            <tr><th>所在地</th><td>千葉県（請求があり次第、遅滞なく開示いたします）</td></tr>
-            <tr><th>連絡先</th><td>oka.ponomedia@gmail.com<br><small>※ お問い合わせはメールにてお願いします。2営業日以内に返信します。</small></td></tr>
-            <tr><th>サービス料金</th><td>55,000円（税込）／まるごとパック<br><small>※ 別途費用が発生する場合は事前にご案内します。</small></td></tr>
-            <tr><th>支払方法</th><td>銀行振込（詳細はご契約時にご案内します）</td></tr>
-            <tr><th>支払時期</th><td>契約締結後、請求書発行から14日以内</td></tr>
-            <tr><th>サービス提供時期</th><td>お支払い確認後、約2〜3週間以内に納品</td></tr>
-            <tr><th>キャンセル・返金</th><td>制作着手前のキャンセルは全額返金。着手後は進捗に応じた実費相当額を申し受けます。詳細はご契約時にご案内します。</td></tr>
-            <tr><th>動作環境</th><td>制作物の公開・閲覧にはインターネット環境が必要です。</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </section>
-
-  <!-- プライバシーポリシー -->
-  <section class="section section-legal" id="privacy" style="background:#f7fafc;">
-    <div class="container">
-      <div class="section-header">
-        <h2 class="section-title" style="font-size:1.4rem;">プライバシーポリシー</h2>
-      </div>
-      <div class="legal-body">
-        <p>PonoMedia（以下「当事業者」）は、お問い合わせフォームを通じてご提供いただく個人情報を以下の方針に基づいて適切に取り扱います。</p>
-        <h3>1. 収集する情報</h3>
-        <p>会社名、担当者名、メールアドレス、電話番号、お問い合わせ内容</p>
-        <h3>2. 利用目的</h3>
-        <p>お問い合わせへの返信、サービスのご提供、見積もり・契約に関する連絡のみに使用します。</p>
-        <h3>3. 第三者への提供</h3>
-        <p>法令に基づく場合を除き、ご本人の同意なく第三者に提供することはありません。</p>
-        <h3>4. 個人情報の管理</h3>
-        <p>取得した個人情報は、不正アクセス・紛失・改ざん等を防止するため、適切に管理します。</p>
-        <h3>5. 開示・訂正・削除のご要望</h3>
-        <p>個人情報の開示・訂正・削除をご希望の場合は、下記メールアドレスまでご連絡ください。</p>
-        <h3>6. お問い合わせ先</h3>
-        <p>oka.ponomedia@gmail.com</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- Footer -->
-  <footer class="site-footer">
-    <div class="container">
-      <div class="footer-inner">
-        <div class="footer-logo">
-          <span class="logo-mark">P</span>
-          <span class="logo-text">PonoMedia 建設採用支援</span>
-        </div>
-        <div class="footer-links">
-          <a href="#tokushoho">特定商取引法に基づく表記</a>
-          <span>｜</span>
-          <a href="#privacy">プライバシーポリシー</a>
-        </div>
-        <p class="footer-copy">&copy; 2025–2026 PonoMedia. All rights reserved.</p>
-        <p class="footer-disclaimer">本サービスは採用・応募を保証するものではありません。<br>また、求職者の紹介・あっせんを行うものではありません。</p>
-      </div>
-    </div>
-  </footer>
-
-  <!-- Sticky CTA (mobile) -->
-  <div class="sticky-cta" id="stickyCta">
-    <a href="#contact" class="btn btn-primary btn-sticky">無料診断を依頼する</a>
+<header class="site-header">
+  <div class="wrap header-inner">
+    <a class="brand" href="#top">
+      <span class="brand-mark">P<span>·</span></span>
+      <span><span class="brand-name">PonoMedia</span><span class="brand-sub">建設採用支援</span></span>
+    </a>
+    <nav class="nav">
+      <a href="#issue">採用の課題</a>
+      <a href="#service">サービス内容</a>
+      <a href="#price">料金</a>
+      <a href="#flow">制作の流れ</a>
+      <a href="#faq">よくある質問</a>
+    </nav>
+    <a href="#contact" class="btn btn--navy btn--sm header-cta">無料で相談する</a>
   </div>
+</header>
 
-  <script src="script.js"></script>
+<section class="hero" id="top">
+  <div class="hero-bg">
+    <img src="imgs/hero.jpg" alt="" class="hero-photo-img">
+  </div>
+  <div class="hero-overlay"></div>
+  <div class="wrap hero-inner">
+    <div class="hero-grid">
+      <div class="hero-copy">
+        <span class="eyebrow hero-eyebrow">工務店・建設会社のための採用支援</span>
+        <h1>現場スタッフの採用を、<br><em>まるごとお任せ</em>ください。</h1>
+        <p class="hero-sub">採用専用ページ・求人原稿・応募フォームを、まとめて制作。「求人票を出しても応募が来ない」を、現場の言葉が伝わるページで変えていきます。</p>
+        <div class="hero-actions">
+          <a href="#contact" class="btn btn--primary">無料で相談する <span class="arr">→</span></a>
+          <a href="#price" class="btn btn--ghost">料金を見る</a>
+        </div>
+        <div class="hero-note"><span class="dot"></span>初期費用・月額なし。<strong style="color:#fff;font-weight:700;">55,000円（税込）</strong>のワンパッケージ。</div>
+      </div>
+    </div>
+    <div class="hero-trust">
+      <div class="trust-item"><b class="tnum">55,000<span style="font-size:12px;">円</span></b><span>税込・追加費用なし</span></div>
+      <div class="trust-item"><b class="tnum">2〜3<span style="font-size:12px;">週間</span></b><span>公開までの目安</span></div>
+      <div class="trust-item"><b>3点</b><span>ページ・原稿・フォーム</span></div>
+      <div class="trust-item"><b>建設特化</b><span>業界に合わせた設計</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="section kpi-section" id="issue">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">The Reality</span>
+      <h2>建設業採用の"いま"を、<span class="kicker-jp">数字</span>で。</h2>
+      <p class="lead">採用は、年々むずかしくなっています。業界特有の課題と採用コストを、数字で整理しました。</p>
+    </div>
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-top"><span class="kpi-cat">採用充足率</span><span class="kpi-idx tnum">01</span></div>
+        <div class="kpi-figure"><span class="kpi-num tnum">77</span><span class="kpi-unit lead-unit">%</span></div>
+        <p class="kpi-desc">新卒採用を<strong>充足できなかった建設企業</strong>の割合。全業種の中でも最高水準の採用難です。</p>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-top"><span class="kpi-cat">求人倍率</span><span class="kpi-idx tnum">02</span></div>
+        <div class="kpi-figure"><span class="kpi-num tnum">5.3</span><span class="kpi-unit lead-unit">倍</span></div>
+        <p class="kpi-desc">建設業の<strong>有効求人倍率</strong>。全職種平均（1.3倍）の4倍以上。完全な「売り手市場」です。</p>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-top"><span class="kpi-cat">高齢化率</span><span class="kpi-idx tnum">03</span></div>
+        <div class="kpi-figure"><span class="kpi-num tnum">46.7</span><span class="kpi-unit lead-unit">%</span></div>
+        <p class="kpi-desc">建設業就業者の<strong>60歳以上が占める割合</strong>。若手の確保は今すぐ動くべき経営課題です。</p>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-top"><span class="kpi-cat">公開スピード</span><span class="kpi-idx tnum">04</span></div>
+        <div class="kpi-figure"><span class="kpi-num tnum">2<span class="sep">–</span>3</span><span class="kpi-unit lead-unit">週間</span></div>
+        <p class="kpi-desc">ご依頼から<strong>採用ページ公開まで</strong>の目安。スピード感をもって採用活動を始められます。</p>
+      </div>
+    </div>
+    <p class="kpi-source">※ 数値は建設業界の採用動向をもとにした目安です。</p>
+  </div>
+</section>
+
+<section class="section" id="service">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">What we make</span>
+      <h2>採用に必要な3点を、<span class="kicker-jp">ひとまとめ</span>で。</h2>
+      <p class="lead">「ページだけ」「原稿だけ」では、応募にはつながりません。応募者が見て・読んで・申し込むまでを一貫して設計します。</p>
+    </div>
+    <div class="svc-grid">
+      <article class="svc-card">
+        <div class="svc-img">🏗️</div>
+        <div class="svc-body">
+          <span class="svc-num">SERVICE 01</span>
+          <h3>採用専用ページ</h3>
+          <p>現場の魅力・職場環境・待遇が伝わる、スマホ最適化の専用ページを制作します。</p>
+          <ul class="svc-list">
+            <li>モバイルファースト設計</li>
+            <li>現場の雰囲気が伝わる構成</li>
+            <li>スタッフの声・1日の流れ</li>
+          </ul>
+        </div>
+      </article>
+      <article class="svc-card">
+        <div class="svc-img">📝</div>
+        <div class="svc-body">
+          <span class="svc-num">SERVICE 02</span>
+          <h3>求人テキスト（原稿）</h3>
+          <p>「応募したくなる」言葉に。求職者目線で、仕事内容や条件をていねいに言語化します。</p>
+          <ul class="svc-list">
+            <li>求職者に届く訴求設計</li>
+            <li>条件・待遇の整理</li>
+            <li>ヒアリングから原稿作成</li>
+          </ul>
+        </div>
+      </article>
+      <article class="svc-card">
+        <div class="svc-img">📋</div>
+        <div class="svc-body">
+          <span class="svc-num">SERVICE 03</span>
+          <h3>応募フォーム</h3>
+          <p>離脱を防ぐ、迷わない応募フォーム。スマホからそのまま応募まで完結できます。</p>
+          <ul class="svc-list">
+            <li>入力項目を最小限に</li>
+            <li>スマホで完結</li>
+            <li>通知メール設定込み</li>
+          </ul>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="section pricing-section" id="price">
+  <div class="pricing-glow"></div>
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Pricing</span>
+      <h2>必要なものすべてで、<span class="kicker-jp">55,000円</span>（税込）。</h2>
+      <p class="lead">わかりやすいワンパッケージ。初期費用も月額もありません。一般的な制作外注と比べてください。</p>
+    </div>
+    <div class="price-grid">
+      <div class="price-main">
+        <span class="price-badge">ワンパッケージ</span>
+        <span class="price-pkg">PONOMEDIA 採用支援パック</span>
+        <h3 class="price-title">採用ページ・求人原稿・応募フォーム 一式</h3>
+        <div class="price-amount">
+          <span class="yen">¥</span><span class="num tnum">55,000</span><span class="unit">円</span><span class="tax">（税込）</span>
+        </div>
+        <p class="price-oneoff">買い切り・追加費用なし／初期費用0円・月額0円</p>
+        <ul class="price-incl">
+          <li>採用専用ページの制作</li>
+          <li>求人テキスト（原稿）の作成</li>
+          <li>応募フォームの設置・通知設定</li>
+          <li>スマートフォン最適化</li>
+          <li>公開までのヒアリング・サポート</li>
+        </ul>
+        <a href="#contact" class="btn btn--primary btn--block">この内容で無料相談する <span class="arr">→</span></a>
+      </div>
+      <div class="price-compare">
+        <h3>一般的な制作外注との比較</h3>
+        <div class="compare-rows">
+          <div class="compare-row">
+            <span class="compare-label">制作会社へ外注した場合（目安）</span>
+            <div class="compare-val"><span class="num tnum">30〜50</span><span class="un">万円</span></div>
+          </div>
+          <div class="compare-row is-us">
+            <span class="compare-label">PonoMedia 採用支援パック</span>
+            <div class="compare-val"><span class="num tnum">5.5</span><span class="un">万円（税込）</span></div>
+          </div>
+        </div>
+        <p class="compare-note">※ 外注費用は内容・依頼先により幅があります。建設採用に特化することで、必要十分な内容を低価格でご提供します。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="flow">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Flow</span>
+      <h2>ご依頼から公開まで、<span class="kicker-jp">最短2〜3週間</span>。</h2>
+      <p class="lead">むずかしい準備は不要です。ヒアリングをもとに、こちらで原稿もページも作成します。</p>
+    </div>
+    <div class="flow-grid">
+      <div class="flow-card"><div class="flow-step tnum">1</div><h3>お問い合わせ</h3><p>フォームからご相談ください。現在の採用状況をうかがいます。</p><span class="flow-when">最短当日返信</span></div>
+      <div class="flow-card"><div class="flow-step tnum">2</div><h3>ヒアリング</h3><p>現場の魅力・募集条件・職場環境をていねいにお聞きします。</p><span class="flow-when">30〜60分</span></div>
+      <div class="flow-card"><div class="flow-step tnum">3</div><h3>制作・ご確認</h3><p>ページ・原稿・フォームを制作。内容をご確認いただきます。</p><span class="flow-when">1〜2週間</span></div>
+      <div class="flow-card"><div class="flow-step tnum">4</div><h3>公開・運用開始</h3><p>公開してすぐ採用活動へ。応募はフォームに届きます。</p><span class="flow-when">採用スタート</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="section faq-section" id="faq">
+  <div class="wrap">
+    <div class="section-head" style="margin:0 auto;text-align:center;">
+      <span class="eyebrow" style="justify-content:center;">FAQ</span>
+      <h2>よくあるご質問</h2>
+    </div>
+    <div class="faq-list">
+      <details class="faq"><summary><span class="q">Q</span><span class="ttl">本当に55,000円だけで、追加費用はかかりませんか？</span><span class="chev"></span></summary><div class="faq-body">採用ページ・求人原稿・応募フォームの制作一式が税込55,000円の買い切りです。初期費用や月額は不要です。大幅な追加要望がある場合のみ、事前にお見積りのうえご相談します。</div></details>
+      <details class="faq"><summary><span class="q">Q</span><span class="ttl">現場の写真や会社情報を用意できなくても大丈夫ですか？</span><span class="chev"></span></summary><div class="faq-body">はい。原稿はヒアリング内容をもとにこちらで作成します。お手元の写真をご提供いただければ反映しますが、ない場合のご相談も承ります。</div></details>
+      <details class="faq"><summary><span class="q">Q</span><span class="ttl">小規模の工務店でも依頼できますか？</span><span class="chev"></span></summary><div class="faq-body">はい、むしろ5〜30名規模の工務店・建設会社こそ、採用ページによる差別化効果が高いです。規模を問わずご相談ください。</div></details>
+      <details class="faq"><summary><span class="q">Q</span><span class="ttl">公開後の修正や運用サポートはありますか？</span><span class="chev"></span></summary><div class="faq-body">公開時の調整は制作に含まれます。公開後の更新・運用については内容に応じてご案内しますので、お気軽にご相談ください。</div></details>
+    </div>
+  </div>
+</section>
+
+<section class="cta-section" id="contact">
+  <div class="cta-overlay"></div>
+  <div class="wrap cta-inner">
+    <h2>採用ページのこと、<br>まずは無料でご相談ください。</h2>
+    <p>「うちの会社でもできる？」という段階で大丈夫です。状況をうかがい、最適なご提案をします。</p>
+    <div class="cta-actions">
+      <a href="#" class="btn btn--primary">無料で相談する <span class="arr">→</span></a>
+      <a href="#price" class="btn btn--ghost">料金をもう一度見る</a>
+    </div>
+    <p class="cta-mini">お問い合わせフォームより、1分でご相談いただけます。</p>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <a class="brand" href="#top">
+          <span class="brand-mark">P<span>·</span></span>
+          <span><span class="brand-name">PonoMedia</span><span class="brand-sub" style="color:#8d99bd;">建設採用支援</span></span>
+        </a>
+        <p>工務店・建設会社のための採用支援サービス。採用ページ・求人原稿・応募フォームを、まとめて制作します。</p>
+      </div>
+      <div class="footer-col">
+        <h4>サービス</h4>
+        <ul>
+          <li><a href="#service">サービス内容</a></li>
+          <li><a href="#price">料金</a></li>
+          <li><a href="#flow">制作の流れ</a></li>
+          <li><a href="#faq">よくある質問</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>お問い合わせ</h4>
+        <ul>
+          <li><a href="#contact">無料で相談する</a></li>
+          <li><a href="#top">ページ先頭へ</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 PonoMedia. All rights reserved.</span>
+      <span>建設会社の採用ページを、まるごとお任せください。</span>
+    </div>
+  </div>
+</footer>
+<div class="mobile-cta">
+  <div class="price-tag"><b class="tnum">¥55,000</b><span>税込・一式</span></div>
+  <a href="#contact" class="btn btn--primary">無料で相談する</a>
+</div>
 </body>
 </html>
