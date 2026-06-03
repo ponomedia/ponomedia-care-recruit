@@ -410,22 +410,10 @@ body{ padding-bottom:72px; }
 .hero-bg { position:absolute; inset:0; overflow:hidden; }
 .hero-photo-img { width:100%; height:100%; object-fit:cover; object-position:center 20%; display:block; }
 
-/* Service image fallbacks */
-.svc-img-fallback {
-  aspect-ratio:16/10; display:flex; align-items:center; justify-content:center;
-  font-size:14px; font-weight:700; letter-spacing:.08em; color:#fff;
-}
-.svc-img-1 { background:linear-gradient(135deg, #1E5FAD 0%, #0D1B4B 100%); }
-.svc-img-2 { background:linear-gradient(135deg, #2a6fc4 0%, #1E5FAD 100%); }
-.svc-img-3 { background:linear-gradient(135deg, #FF6B2B 0%, #c94e18 100%); }
-.svc-img-fallback span { opacity:0.7; }
 
-/* CTA bg fallback */
+
 .cta-section { position:relative; overflow:hidden; }
-.cta-img-fallback {
-  position:absolute; inset:0;
-  background:linear-gradient(135deg, #060d26 0%, #0D1B4B 40%, #0f2248 100%);
-}
+.cta-photo-img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
 
 </style>
 </head>
@@ -541,7 +529,7 @@ body{ padding-bottom:72px; }
 
     <div class="svc-grid">
       <article class="svc-card">
-        <div class="svc-img-fallback svc-img-1"><span>採用ページ</span></div>
+        <img src="imgs/service-lp.jpg" alt="採用専用ページのイメージ" style="width:100%;height:100%;object-fit:cover;">
         <div class="svc-body">
           <span class="svc-num">SERVICE 01</span>
           <h3>採用専用ページ</h3>
@@ -554,7 +542,7 @@ body{ padding-bottom:72px; }
         </div>
       </article>
       <article class="svc-card">
-        <div class="svc-img-fallback svc-img-2"><span>求人原稿</span></div>
+        <img src="imgs/service-text.jpg" alt="求人原稿イメージ" style="width:100%;height:100%;object-fit:cover;">
         <div class="svc-body">
           <span class="svc-num">SERVICE 02</span>
           <h3>求人テキスト（原稿）</h3>
@@ -567,7 +555,7 @@ body{ padding-bottom:72px; }
         </div>
       </article>
       <article class="svc-card">
-        <div class="svc-img-fallback svc-img-3"><span>応募フォーム</span></div>
+        <img src="imgs/service-form.jpg" alt="応募フォームイメージ" style="width:100%;height:100%;object-fit:cover;">
         <div class="svc-body">
           <span class="svc-num">SERVICE 03</span>
           <h3>応募フォーム</h3>
@@ -703,7 +691,7 @@ body{ padding-bottom:72px; }
 
 <!-- ============================ Final CTA ============================ -->
 <section class="cta-section" id="contact" data-screen-label="お問い合わせCTA">
-  <div class="cta-img-fallback"></div>
+  <img src="imgs/cta-bg.jpg" alt="" class="cta-photo-img">
   <div class="cta-overlay"></div>
   <div class="wrap cta-inner">
     <h2>採用ページのこと、<br>まずは無料でご相談ください。</h2>
