@@ -1111,85 +1111,79 @@ button {
 .stats-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 20px;
+  gap: 16px;
 }
 
 .stats-card {
   background: var(--color-bg);
-  border-radius: var(--radius-md);
-  padding: 32px 28px;
+  border-radius: 12px;
+  padding: 36px 32px 28px;
   border: 1px solid var(--color-gray-200);
+  border-top: 3px solid var(--color-secondary);
   transition: transform var(--transition), box-shadow var(--transition);
   position: relative;
-  overflow: hidden;
-}
-
-.stats-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, var(--color-secondary), #5B8DD9);
 }
 
 .stats-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-md);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 32px rgba(13,27,75,0.10);
 }
 
 .stats-card-accent {
-  background: linear-gradient(145deg, #EBF2FF, #D6E8FF);
-  border-color: rgba(30,95,173,0.2);
+  background: #F0F5FF;
+  border-color: rgba(30,95,173,0.15);
+  border-top-color: var(--color-accent);
 }
 
-.stats-card-accent::before {
-  background: linear-gradient(90deg, var(--color-accent), var(--color-accent2));
-}
-
-.stats-icon {
-  width: 56px;
-  height: 56px;
-  background: var(--color-blue-light);
-  border-radius: 14px;
+/* KPI数値エリア */
+.stats-kpi {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-blue);
-  margin-bottom: 16px;
+  align-items: baseline;
+  gap: 4px;
+  margin-bottom: 10px;
+  line-height: 1;
 }
 
-.stats-card-accent .stats-icon {
-  background: rgba(255,107,43,0.12);
-  color: var(--color-accent);
-}
-
-.stats-number {
-  font-size: clamp(2rem, 5vw, 2.8rem);
+.stats-val {
+  font-size: clamp(2.4rem, 4.5vw, 3.2rem);
   font-weight: 900;
   color: var(--color-text);
-  line-height: 1.1;
-  margin-bottom: 10px;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
+  white-space: nowrap;
+}
+
+.stats-range {
+  font-size: 0.65em;
+  font-weight: 700;
+  letter-spacing: 0;
 }
 
 .stats-unit {
-  font-size: 1.2rem;
+  font-size: clamp(1rem, 2vw, 1.25rem);
   font-weight: 700;
   color: var(--color-blue);
+  white-space: nowrap;
+  padding-bottom: 4px;
 }
 
-.stats-label {
-  font-size: 0.88rem;
-  color: var(--color-gray-700);
-  line-height: 1.7;
-  margin-bottom: 8px;
+.stats-card-accent .stats-unit {
+  color: var(--color-accent);
 }
 
-.stats-note {
-  font-size: 0.72rem;
+.stats-context {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 10px;
+  line-height: 1.4;
+}
+
+.stats-sub {
+  font-size: 0.78rem;
   color: var(--color-gray-500);
+  line-height: 1.7;
+  border-top: 1px solid var(--color-gray-200);
+  padding-top: 10px;
 }
 
 /* ============================================
