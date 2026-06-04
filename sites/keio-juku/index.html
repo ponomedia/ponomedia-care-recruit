@@ -999,4 +999,73 @@ body.theme-gold .btn-primary:hover { color: var(--navy); }
 
 
 
+<script>
+/* =============================================
+   Keio-juku standalone JS: reveal + nav + hero
+   ============================================= */
+
+// 1. Hero variant default (heroA)
+(function(){
+  var main = document.querySelector('main') || document.body;
+  if (!main.dataset.hero) main.dataset.hero = 'a';
+})();
+
+// 2. Reveal on scroll (IntersectionObserver)
+(function(){
+  var els = document.querySelectorAll('.reveal');
+  if (!els.length) return;
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if (e.isIntersecting) { e.target.classList.add('is-visible'); io.unobserve(e.target); }
+      });
+    }, { threshold: 0.12 });
+    els.forEach(function(el){ io.observe(el); });
+  } else {
+    // Fallback: show all immediately
+    els.forEach(function(el){ el.classList.add('is-visible'); });
+  }
+})();
+
+// 3. Mobile nav toggle
+(function(){
+  var btn = document.getElementById('navToggle');
+  var menu = document.getElementById('mobileMenu');
+  if (!btn || !menu) return;
+  btn.addEventListener('click', function(){
+    var open = menu.classList.toggle('open');
+    btn.setAttribute('aria-expanded', open);
+  });
+  // Close on link click
+  menu.querySelectorAll('a').forEach(function(a){
+    a.addEventListener('click', function(){ menu.classList.remove('open'); });
+  });
+})();
+
+// 4. FAQ accordion
+(function(){
+  document.querySelectorAll('.faq-item').forEach(function(item){
+    var q = item.querySelector('.faq-q');
+    if (!q) return;
+    q.addEventListener('click', function(){
+      item.classList.toggle('open');
+    });
+  });
+})();
+
+// 5. Sticky header shadow on scroll
+(function(){
+  var hdr = document.querySelector('.site-header');
+  if (!hdr) return;
+  window.addEventListener('scroll', function(){
+    hdr.classList.toggle('scrolled', window.scrollY > 40);
+  }, { passive: true });
+})();
+</script>
+<style>
+/* reveal animation trigger */
+.reveal.is-visible { opacity: 1 !important; transform: none !important; }
+/* fallback: if no JS, show everything */
+@media (scripting: none) { .reveal { opacity: 1 !important; transform: none !important; } }
+</style>
 </body></html>

@@ -273,7 +273,9 @@ button {
    ============================================ */
 .hero {
   position: relative;
-  background: linear-gradient(160deg, var(--color-orange-light) 0%, var(--color-yellow-light) 50%, var(--color-green-light) 100%);
+  background:
+    linear-gradient(160deg, rgba(255,140,50,.72) 0%, rgba(255,200,60,.60) 50%, rgba(60,180,100,.65) 100%),
+    url('imgs/hero.jpg') center/cover no-repeat;
   padding: 64px 0 80px;
   overflow: hidden;
 }

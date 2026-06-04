@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 """
 run_industry_pipeline.py — 業種別採用LP営業パイプライン
-介護以外の業種（保育・建設・薬局・飲食）向けに既存パイプラインを流用する。
+介護以外の業種（保育・建設・薬局・飲食・物流・清掃）向けに既存パイプラインを流用する。
 
 使い方:
     python run_industry_pipeline.py --industry hoiku
     python run_industry_pipeline.py --industry kensetsu
     python run_industry_pipeline.py --industry yakkyoku
     python run_industry_pipeline.py --industry inshoku
+    python run_industry_pipeline.py --industry butsuryu
+    python run_industry_pipeline.py --industry seisou
     python run_industry_pipeline.py --industry hoiku --dry-run
 """
 
@@ -21,6 +23,8 @@ SUPPORTED_INDUSTRIES = {
     "kensetsu":  "config_kensetsu",
     "yakkyoku":  "config_yakkyoku",
     "inshoku":   "config_inshoku",
+    "butsuryu":  "config_butsuryu",
+    "seisou":    "config_seisou",
 }
 
 def main():
@@ -28,6 +32,7 @@ def main():
     parser.add_argument("--industry", required=True, choices=SUPPORTED_INDUSTRIES.keys(),
                         help="対象業種: hoiku / kensetsu / yakkyoku / inshoku")
     parser.add_argument("--dry-run", action="store_true", help="送信せずに内容確認")
+    parser.add_argument("--form-only", action="store_true", help="フォーム送信のみ。メール送信なし")
     parser.add_argument("--max-facilities", type=int, default=50)
     parser.add_argument("--rank-filter", type=str, default="A,B")
     args = parser.parse_args()
@@ -74,6 +79,8 @@ def main():
     ]
     if args.dry_run:
         sys.argv.append("--dry-run")
+    if args.form_only:
+        sys.argv.append("--form-only")
 
     import run_pipeline
     run_pipeline.main()
