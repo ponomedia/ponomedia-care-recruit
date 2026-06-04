@@ -185,6 +185,18 @@ p{margin:0;text-wrap:pretty;}
 @media(min-width:880px){.mobile-cta{display:none;}}
 body{padding-bottom:72px;}
 @media(min-width:880px){body{padding-bottom:0;}}
+
+/* ---- about-banner ---- */
+.about-banner{padding:64px 0;background:var(--paper-2);border-top:1px solid var(--line);border-bottom:1px solid var(--line);}
+.about-banner-grid{display:grid;gap:40px;align-items:center;}
+@media(min-width:760px){.about-banner-grid{grid-template-columns:1fr 1fr;gap:56px;}}
+.about-banner-img{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow-lg);}
+.about-banner-img img{width:100%;height:100%;object-fit:cover;display:block;}
+.about-banner-body{}
+.about-banner-body h3{font-size:clamp(20px,3.5vw,26px);font-weight:900;color:var(--ink);margin:14px 0 0;line-height:1.5;}
+.about-banner-body p{color:var(--ink-3);font-size:15px;margin-top:16px;line-height:2;}
+.about-banner-body .btn{margin-top:28px;}
+
 </style>
 </head>
 <body>

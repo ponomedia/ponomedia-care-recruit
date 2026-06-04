@@ -415,6 +415,16 @@ body{ padding-bottom:72px; }
 .cta-section { position:relative; overflow:hidden; }
 .cta-photo-img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
 
+
+.about-banner{padding:64px 0;background:var(--paper-2);border-top:1px solid var(--line);border-bottom:1px solid var(--line);}
+.about-banner-grid{display:grid;gap:40px;align-items:center;}
+@media(min-width:760px){.about-banner-grid{grid-template-columns:1fr 1fr;gap:56px;}}
+.about-banner-img{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow-lg);}
+.about-banner-img img{width:100%;height:100%;object-fit:cover;display:block;}
+.about-banner-body h3{font-size:clamp(20px,3.5vw,26px);font-weight:900;color:var(--ink);margin:14px 0 0;line-height:1.5;}
+.about-banner-body p{color:var(--ink-3);font-size:15px;margin-top:16px;line-height:2;}
+.about-banner-body .btn{margin-top:28px;}
+
 </style>
 </head>
 <body>
@@ -572,6 +582,23 @@ body{ padding-bottom:72px; }
 </section>
 
 <!-- ============================ Pricing ============================ -->
+
+<section class="about-banner">
+  <div class="wrap">
+    <div class="about-banner-grid">
+      <div class="about-banner-img">
+        <img src="imgs/consult.jpg" alt="PonoMedia 採用ページ制作の相談風景" loading="lazy">
+      </div>
+      <div class="about-banner-body">
+        <span class="eyebrow">About PonoMedia</span>
+        <h3>「何を載せればいいか」<br>から一緒に考えます。</h3>
+        <p>PonoMediaは介護・福祉施設の採用支援に特化したチームです。現場の魅力・職場の雰囲気・働く条件を、求職者に伝わる言葉とデザインで表現します。ヒアリング1回・追加費用なし・2〜3週間で完結します。</p>
+        <a href="#contact" class="btn btn--primary">無料相談を申し込む <span class="arr">→</span></a>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section class="section pricing-section" id="price" data-screen-label="料金">
   <div class="pricing-glow"></div>
   <div class="wrap">
