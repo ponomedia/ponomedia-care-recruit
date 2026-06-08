@@ -475,10 +475,10 @@ p { margin: 0; text-wrap: pretty; }
   /* =========================================================
      MOBILE FIXES (≤600px) — PC layout unchanged
      ========================================================= */
-  /* ヘッダー: ブランド名を小さく、サブテキストを非表示 */
+  /* ヘッダー: CTAボタン非表示（ハンバーガーメニュー内にあるため）、ブランド整理 */
+  .nav-cta { display: none; }
   .brand .sub { display: none; }
-  .brand .name { font-size: 15px; }
-  .nav-cta .btn { padding: 8px 13px; font-size: 12.5px; min-height: 36px; }
+  .brand .name { font-size: 15px; white-space: nowrap; }
   /* hero h1: 折り返し許可 */
   .hero h1 .hl { white-space: normal; }
   /* 浮きカード: スマホでは非表示（ダイアグラムに重なるため） */
