@@ -449,10 +449,16 @@ p { margin: 0; text-wrap: pretty; }
   .nav-toggle { display: block; }
   .heroA .grid, .philo .grid { grid-template-columns: 1fr; }
   .heroA .hero-visual { order: -1; }
-  .hero-diagram { margin: 0 auto; max-width: 420px; }
+  .hero-diagram { margin: 0 auto; max-width: 380px; }
   .grid-3, .worry-grid, .curri-grid, .aud-grid, .price-grid { grid-template-columns: repeat(2, 1fr); }
   .curri-grid { grid-template-columns: repeat(2, 1fr); }
   .skill-grid { grid-template-columns: 1fr; }
+  /* nav: ブランドとボタンを小さく */
+  .brand .sub { font-size: 9px; letter-spacing: .08em; }
+  .nav-cta .btn { padding: 9px 16px; font-size: 13px; min-height: 40px; }
+  /* 浮きカードをダイアグラム内に収める */
+  .hd-tl { top: 2%; right: 2%; }
+  .hd-bl { bottom: 2%; left: 2%; }
 }
 @media (max-width: 600px) {
   body { font-size: 15.5px; }
@@ -466,6 +472,34 @@ p { margin: 0; text-wrap: pretty; }
   .btn { width: 100%; }
   .nav-cta .btn { width: auto; }
   .hero-cta .btn { width: 100%; }
+  /* =========================================================
+     MOBILE FIXES (≤600px) — PC layout unchanged
+     ========================================================= */
+  /* ヘッダー: ブランド名を小さく、サブテキストを非表示 */
+  .brand .sub { display: none; }
+  .brand .name { font-size: 15px; }
+  .nav-cta .btn { padding: 8px 13px; font-size: 12.5px; min-height: 36px; }
+  /* hero h1: 折り返し許可 */
+  .hero h1 .hl { white-space: normal; }
+  /* 浮きカード: スマホでは非表示（ダイアグラムに重なるため） */
+  .hd-tl, .hd-bl { display: none; }
+  /* ヒーローダイアグラム: 最大幅を抑制 */
+  .hero-diagram { max-width: 300px; }
+  /* 比較表: 横スクロール対応 */
+  .compare-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .compare { min-width: 460px; font-size: 13px; }
+  .compare th, .compare td { padding: 13px 12px; }
+  /* フッター: 縦積み */
+  .footer .grid { flex-direction: column; gap: 32px; }
+  .footer .fcols { flex-direction: column; gap: 24px; }
+  /* ロードマップ */
+  .rstep { grid-template-columns: 48px 1fr; gap: 16px; }
+  .rstep .rn { width: 48px; height: 48px; }
+  .roadmap::before { left: 23px; }
+  /* 評価グリッド */
+  .eval-grid { grid-template-columns: 1fr; }
+  /* ビッグナンバー */
+  .bignum .v { font-size: 60px; }
 }
 
 /* mobile slide-down menu */
