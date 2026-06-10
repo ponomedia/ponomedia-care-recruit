@@ -430,6 +430,12 @@ body.theme-gold .btn-primary:hover { color: var(--navy); }
   .rstep { grid-template-columns: 48px 1fr; gap:16px; }
   .rstep .rn { width:48px; height:48px; }
   .roadmap::before { left:23px; }
+  /* インラインgridの強制1カラム化 */
+  .sp-grid-2col { grid-template-columns: 1fr !important; }
+  /* ヘッダー整理 */
+  .nav-cta { display: none; }
+  .brand .sub { display: none; }
+  .brand .name { font-size: 15px; white-space: nowrap; }
 }
 </style>
 </head>
@@ -534,7 +540,7 @@ body.theme-gold .btn-primary:hover { color: var(--navy); }
       <h2 class="section-title">他の慶應学部とは、<br>まったく違う入試形式。</h2>
       <p class="section-lead">SFC（総合政策・環境情報）は、英語と小論文の2教科のみで受験できる唯一の慶應学部です。その分、対策の深さと質が結果を大きく左右します。</p>
     </div>
-    <div style="margin-top:54px; display:grid; grid-template-columns:1fr 1fr; gap:32px; align-items:start;">
+    <div class="sp-grid-2col" style="margin-top:54px; display:grid; grid-template-columns:1fr 1fr; gap:32px; align-items:start;">
       <div class="reveal">
         <div class="balance">
           <div class="bt">SFC 配点バランス（選択科目 ／ 小論文）</div>
@@ -718,7 +724,7 @@ body.theme-gold .btn-primary:hover { color: var(--navy); }
     </div>
     <div style="margin-top:48px;" class="reveal">
       <div class="card" style="padding:32px 36px; background: linear-gradient(120deg, var(--green-soft) 0%, var(--bg) 100%); border-color:var(--green-line);">
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:32px; align-items:center;">
+        <div class="sp-grid-2col" style="display:grid; grid-template-columns:1fr 1fr; gap:32px; align-items:center;">
           <div>
             <span class="eyebrow">小論文の書き方</span>
             <h3 style="margin-top:14px; font-size:22px; line-height:1.6;">SFCで通る論述の<br>4ステップ構造</h3>
