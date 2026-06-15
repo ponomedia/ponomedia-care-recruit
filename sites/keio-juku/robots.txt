@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /ponomedia-care-recruit/sites/keio-juku/
+
+Sitemap: https://ponomedia.github.io/ponomedia-care-recruit/sites/keio-juku/sitemap.xml
