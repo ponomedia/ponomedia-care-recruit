@@ -11,9 +11,10 @@ heartpageエリアID一覧（主要）:
 """
 
 import logging
+import re
 import time
 from typing import Optional
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse
 
 import requests
 from bs4 import BeautifulSoup
@@ -62,6 +63,9 @@ class DirectoryScraper:
         "hellowork-plus.com", "job-net.jp", "careermine.jp",
         "arubaito-ex.jp", "baitoru.com", "an-job.com", "r-staffing.jp",
         "recruit.co.jp", "en-japan.com", "nikkei.com",
+        "kaigotenshoku.com", "kaigoworker.jp", "nurse-senka.jp",
+        "fukushikyujin.com", "kaigo-haken.com", "care-worker.jp",
+        "mynavi-kaigo.jp", "kaigo-oshigoto.com", "carefit.jp",
         # 介護施設ディレクトリ・検索
         "ansinkaigo.jp", "lyxis.com", "kaigo.net", "kaigodb.com",
         "minnanokaigo.com", "carenavi.jp", "kaigo114.jp",
@@ -71,7 +75,7 @@ class DirectoryScraper:
         "kaigo-ryoukin.com", "ninchisho-navi.net", "carely.org",
         "kaigo.homes.co.jp", "homes.co.jp", "caresul-kaigo.jp", "machbaito.jp",
         "oasisnavi.jp", "platinum-care.jp", "kaigodb.com",
-        "kaigo-search.jp", "kaigopostnavi.jp",
+        "kaigo-search.jp", "kaigopostnavi.jp", "e-kaigo.net",
         "woman-type.jp", "type.jp", "telnavi.jp", "sagasix.jp",
         "lovewalker.jp", "navitime.co.jp", "jorudan.co.jp",
         # 地図・電話帳
@@ -84,6 +88,8 @@ class DirectoryScraper:
         "carely.org", "oasisnavi.jp", "oyasmile.com",
         "seniorguide.jp", "join-kaigo.jp", "kaigonohonne.com",
         "premium-care.jp", "caresul-kaigo.jp",
+        "rehaspa.jp", "kaigo-seeker.com", "suumo.jp",
+        "sumai-to-kurashi.jp", "senior-hikaku.com",
         # 行政・公的機関
         "mhlw.go.jp", "mext.go.jp", "cao.go.jp",
         "pref.", "city.", ".lg.jp",
@@ -95,6 +101,9 @@ class DirectoryScraper:
         "benesse-careeros.co.jp", "wikipedia.org",
         "ypsort.com", "locatefamily.com", "econstats.com",
         "textus-receptus.com", "elleyarns.com",
+        # 明らかに無関係なドメイン（暗号通貨・海外サービス等）
+        "monacoin", "blockchain", "crypto", "bitcoin", "nft",
+        "casino", "bet", "gambling", "loan", "payday",
     ]
 
     def scrape_facilities(
@@ -189,6 +198,9 @@ class DirectoryScraper:
                         continue
                     if not url.startswith("http"):
                         continue
+                    if self._is_portal_url(url):
+                        logger.debug(f"  ポータルURL除外: {url}")
+                        continue
                     candidates.append(url)
 
                 # .jp ドメインのみ採用（外国サイトは返さない）
@@ -277,9 +289,35 @@ class DirectoryScraper:
         url_lower = url.lower()
         return any(d in url_lower for d in self.EXCLUDE_DOMAINS)
 
+    def _is_portal_url(self, url: str) -> bool:
+        """
+        URLがポータルサイトの施設個別ページかどうかを構造で判定する。
+
+        ポータルの施設ページは通常:
+          https://minnanokaigo.com/care-home/12345/
+          https://lifull.com/elder-care/chiba/12345/
+        のように、パスセグメントに4桁以上の純数字IDを含む。
+        また、パスの深さが4階層以上ある場合も疑わしい。
+        """
+        try:
+            path = urlparse(url).path
+            segments = [s for s in path.split("/") if s]
+
+            # パスに4桁以上の純数字セグメントがあればポータルの施設詳細ページ
+            for seg in segments:
+                if re.fullmatch(r'\d{4,}', seg):
+                    return True
+
+            # パスが7階層以上ある場合はポータルの深い個別ページの可能性（公式は通常浅い）
+            if len(segments) >= 7:
+                return True
+
+        except Exception:
+            pass
+        return False
+
     def _is_jp_domain(self, url: str) -> bool:
         """URLが .jp ドメインまたは日本系プラットフォームかどうかを判定する"""
-        from urllib.parse import urlparse
         try:
             host = urlparse(url).netloc.lower()
             if host.endswith(".jp"):

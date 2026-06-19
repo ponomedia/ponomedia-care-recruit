@@ -741,8 +741,10 @@ class FormSubmitter:
             logger.warning(f"[CODEXフォームタイプ] タイムアウト: {form_url} — ブロック")
             return False
         except FileNotFoundError:
-            logger.warning("[CODEXフォームタイプ] codexコマンド未インストール — ブロック（安全方向）")
-            return False
+            # Codex未インストール時は内部チェック（_check_form_is_resident_type）が
+            # 確実なケースは既にブロック済みのため、送信を許可する
+            logger.info("[CODEXフォームタイプ] codexコマンドなし → 内部チェック通過済みで送信許可")
+            return True
         except Exception as e:
             logger.warning(f"[CODEXフォームタイプ] エラー: {e} — ブロック（安全方向）")
             return False

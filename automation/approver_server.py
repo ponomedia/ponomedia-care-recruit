@@ -44,6 +44,119 @@ logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 
+
+def _normalize_url_simple(url: str) -> str:
+    """URLを正規化（スキーム・末尾スラッシュを除去して比較用に統一）"""
+    url = (url or "").lower().strip().rstrip("/")
+    url = url.replace("https://", "").replace("http://", "").replace("www.", "")
+    return url
+
+
+def reconcile_queue_with_sent_log():
+    """
+    sent_log.json とキューを突き合わせ、乖離を修正する。
+
+    ① processing のまま残っているアイテムをリセット
+       - sent_log に記録あり → duplicate（送信済み扱い）
+       - sent_log に記録なし → pending に戻す（再承認可能）
+    ② pending/needs_review なのに sent_log に記録あり → duplicate
+    ③ sent なのに sent_log に未記録（sent_log_failed フラグあり）→ sent_log に追記
+    ④ sent_emergency.txt が残っていれば sent_log に取り込んで削除
+    """
+    from sent_log import _load as _load_sent, record_sent
+
+    queue = load_queue()
+    sent_records = _load_sent()
+
+    sent_urls   = {_normalize_url_simple(r.get("url", ""))  for r in sent_records}
+    sent_emails = {(r.get("email") or "").lower()            for r in sent_records if r.get("email")}
+    sent_names  = {(r.get("facility_name") or "").strip()    for r in sent_records if r.get("facility_name")}
+
+    changed = False
+
+    # ④ 緊急ログ（sent_emergency.txt）を sent_log に取り込む
+    emergency_path = os.path.join(BASE_DIR, "output", "sent_emergency.txt")
+    if os.path.exists(emergency_path):
+        try:
+            with open(emergency_path, "r", encoding="utf-8") as ef:
+                lines = ef.readlines()
+            for line in lines:
+                parts = line.strip().split("\t")
+                if len(parts) >= 4:
+                    ts, name_e, url_e, email_e = parts[0], parts[1], parts[2], parts[3]
+                    method_e = parts[4] if len(parts) > 4 else "不明"
+                    norm_url = _normalize_url_simple(url_e)
+                    if norm_url not in sent_urls:
+                        logger.warning(f"[reconcile] 緊急ログ取り込み: {name_e}")
+                        record_sent(
+                            facility_name=name_e,
+                            url=url_e,
+                            email=email_e,
+                            method=method_e,
+                        )
+                        sent_urls.add(norm_url)
+                        sent_names.add(name_e.strip())
+            os.remove(emergency_path)
+            logger.info(f"[reconcile] sent_emergency.txt を取り込み・削除しました ({len(lines)}件)")
+        except Exception as e:
+            logger.warning(f"[reconcile] 緊急ログ取り込みエラー: {e}")
+
+    for item in queue:
+        status = item.get("status", "")
+        name   = (item.get("facility_name") or "").strip()
+        url    = _normalize_url_simple(item.get("url", ""))
+        email  = (item.get("contact_email") or "").lower()
+
+        def _is_in_sent_log():
+            return (
+                (url   and url   in sent_urls)  or
+                (email and email in sent_emails) or
+                (name  and name  in sent_names)
+            )
+
+        # ① processing のまま残っている（クラッシュで中断）
+        if status == "processing":
+            if _is_in_sent_log():
+                # 実際には送信済みだった → duplicate
+                logger.info(f"[reconcile] processing→duplicate（sent_logに記録あり）: {name}")
+                item["status"] = "duplicate"
+            else:
+                # 送信されていない → pending に戻して再承認可能にする
+                logger.info(f"[reconcile] processing→pending（sent_logに記録なし）: {name}")
+                item["status"] = "pending"
+                item.pop("sent_at", None)
+            changed = True
+
+        # ② pending/needs_review なのに sent_log に記録あり → duplicate
+        elif status in ("pending", "needs_review"):
+            if _is_in_sent_log():
+                logger.info(f"[reconcile] {status}→duplicate（sent_logと不一致）: {name}")
+                item["status"] = "duplicate"
+                item["sent_at"] = item.get("sent_at", datetime.now().isoformat())
+                changed = True
+
+        # ③ sent なのに sent_log に未記録 → sent_log に追記
+        elif status == "sent":
+            if url and url not in sent_urls:
+                logger.warning(f"[reconcile] sent→sent_logへ追記（ログ漏れ検出）: {name}")
+                try:
+                    record_sent(
+                        facility_name=name,
+                        url=item.get("url", ""),
+                        email=item.get("contact_email", ""),
+                        method=item.get("contact_method", "不明"),
+                    )
+                    sent_urls.add(url)
+                    sent_names.add(name)
+                    item.pop("sent_log_failed", None)  # フラグ解除
+                    changed = True
+                except Exception as e:
+                    logger.error(f"[reconcile] sent_log追記失敗: {name} / {e}")
+
+    if changed:
+        save_queue(queue)
+        logger.info("[reconcile] キューを更新しました")
+
 QUEUE_FILE = os.path.join(BASE_DIR, "output", "approval_queue.json")
 
 # キューのpending件数がこれを下回ったら自動補充する
@@ -167,6 +280,12 @@ HTML_TEMPLATE = """
     transition: opacity 0.3s;
   }
   .card.done { opacity: 0.4; pointer-events: none; }
+  .card.done-card {
+    opacity: 0.35;
+    background: #f0f4f8;
+    pointer-events: none;
+    user-select: none;
+  }
 
   .card-header {
     padding: 14px 16px 10px;
@@ -222,6 +341,20 @@ HTML_TEMPLATE = """
   .status-sent { text-align: center; padding: 12px; color: #38a169; font-weight: bold; font-size: 14px; }
   .status-rejected { text-align: center; padding: 12px; color: #a0aec0; font-size: 14px; }
   .status-error { text-align: center; padding: 12px; color: #e53e3e; font-size: 14px; }
+  .sent-badge {
+    display: inline-block; background: #c6f6d5; color: #276749;
+    border: 1px solid #9ae6b4; border-radius: 4px;
+    padding: 3px 10px; font-size: 12px; font-weight: bold; margin-left: 8px;
+  }
+  .rejected-badge {
+    display: inline-block; background: #e2e8f0; color: #718096;
+    border: 1px solid #cbd5e0; border-radius: 4px;
+    padding: 3px 10px; font-size: 12px; font-weight: bold; margin-left: 8px;
+  }
+  .section-divider {
+    text-align: center; padding: 12px 20px; color: #a0aec0;
+    font-size: 13px; border-top: 1px solid #e2e8f0; margin-top: 8px;
+  }
   .review-banner { background: #fffbeb; border: 1px solid #f6e05e; color: #744210;
     padding: 8px 16px; font-size: 13px; font-weight: bold; }
 
@@ -284,6 +417,38 @@ HTML_TEMPLATE = """
   </div>
 {% endif %}
 
+{% if done_items %}
+  <div class="section-divider">── 送信済み・却下済み（{{ done_items | length }}件） ──</div>
+  {% for item in done_items %}
+  <div class="card done-card" id="card-{{ item.id }}">
+    <div class="card-header">
+      <div class="facility-name">
+        {{ item.facility_name }}
+        {% if item.status == 'sent' %}
+          <span class="sent-badge">✓ 送信済み{% if item.contact_method %} ({{ item.contact_method }}){% endif %}</span>
+        {% elif item.status == 'rejected' %}
+          <span class="rejected-badge">✗ 却下済み</span>
+        {% elif item.status == 'blocked' %}
+          <span class="rejected-badge">⛔ ブロック</span>
+        {% elif item.status == 'duplicate' %}
+          <span class="rejected-badge">重複</span>
+        {% endif %}
+      </div>
+      <div class="meta">
+        {{ item.area }} / {{ item.facility_type }} &nbsp;|&nbsp;
+        ランク{{ item.rank }} &nbsp;{{ item.score }}点/100点
+        {% if item.sent_at %}
+          &nbsp;— {{ item.sent_at[:16] | replace('T', ' ') }}
+        {% elif item.rejected_at %}
+          &nbsp;— {{ item.rejected_at[:16] | replace('T', ' ') }}
+        {% endif %}
+      </div>
+    </div>
+    <div style="padding:8px 16px;font-size:12px;color:#a0aec0;word-break:break-all;">{{ item.url }}</div>
+  </div>
+  {% endfor %}
+{% endif %}
+
 <div class="footer">PonoMedia 介護採用支援</div>
 
 <script>
@@ -342,10 +507,16 @@ function reject(id) {
 
 @app.route("/")
 def index():
-    items = [i for i in load_queue() if i.get("status") in ("pending", "needs_review", "processing")]
+    queue = load_queue()
+    items = [i for i in queue if i.get("status") in ("pending", "needs_review", "processing")]
+    # 送信済み・却下済みは最新50件のみ表示（古いものは省略）
+    done_statuses = ("sent", "rejected", "blocked", "duplicate")
+    done_items = [i for i in queue if i.get("status") in done_statuses][-50:]
+    done_items = list(reversed(done_items))  # 新しいものを上に
     return render_template_string(
         HTML_TEMPLATE,
         items=items,
+        done_items=done_items,
         pending_count=len(items),
     )
 
@@ -552,19 +723,45 @@ def _do_approve(item_id, item, queue):
     if not sent and not reason:
         reason = "フォームもメールも利用不可"
 
-    # 送信成功時のみ永続ログに記録（失敗時は記録しない）
+    # 送信成功時のみ永続ログに記録
+    # ★ record_sent が失敗してもキューを "sent" にするが、log_failed フラグを立てる
+    #    → 次回起動時の reconcile で sent_log への再取り込みを試みる
+    log_failed = False
     if sent:
-        record_sent(
-            facility_name=item["facility_name"],
-            url=item.get("url", ""),
-            email=item.get("contact_email", ""),
-            method=method,
-        )
+        try:
+            record_sent(
+                facility_name=item["facility_name"],
+                url=item.get("url", ""),
+                email=item.get("contact_email", ""),
+                method=method,
+            )
+        except Exception as e:
+            # sent_log への書き込み失敗 → 緊急バックアップ（追記テキスト）
+            log_failed = True
+            logger.critical(
+                f"[CRITICAL] sent_log 書き込み失敗！送信済みなのに記録できていない: "
+                f"{item['facility_name']} / {e}"
+            )
+            try:
+                emergency_path = os.path.join(BASE_DIR, "output", "sent_emergency.txt")
+                with open(emergency_path, "a", encoding="utf-8") as ef:
+                    ef.write(
+                        f"{datetime.now().isoformat()}\t"
+                        f"{item.get('facility_name','')}\t"
+                        f"{item.get('url','')}\t"
+                        f"{item.get('contact_email','')}\t"
+                        f"{method}\n"
+                    )
+                logger.warning(f"[緊急ログ] {emergency_path} に記録しました")
+            except Exception as e2:
+                logger.critical(f"[CRITICAL] 緊急ログへの書き込みも失敗: {e2}")
 
     # キュー更新
     item["status"] = "sent" if sent else "failed"
     item["sent_at"] = datetime.now().isoformat()
     item["contact_method"] = method
+    if log_failed:
+        item["sent_log_failed"] = True  # reconcile で再取り込みするフラグ
     save_queue(queue)
 
     logger.info(f"[承認] {item['facility_name']} → {method if sent else '失敗: ' + reason}")
@@ -638,6 +835,13 @@ if __name__ == "__main__":
     print("  ※同じWiFiに接続してください")
     print("  終了: Ctrl+C")
     print("=" * 50)
+
+    # 起動時にキューと sent_log を突き合わせて乖離を修正
+    try:
+        reconcile_queue_with_sent_log()
+        logger.info("[起動] sent_log との reconcile 完了")
+    except Exception as e:
+        logger.warning(f"[起動] reconcile スキップ（エラー）: {e}")
 
     # waitress: Flask開発サーバーより安定した本番用WSGIサーバー
     serve(app, host="0.0.0.0", port=5050, threads=4)

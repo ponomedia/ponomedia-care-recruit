@@ -82,12 +82,15 @@ class HiringPageScorer:
 
         # 採用ページ本文（researcher が follow_hiring_page=True で取得した場合に存在）
         hiring_page_text = facility_data.get("hiring_page_text", "").lower()
-        # トップ + 採用ページを合わせた評価テキスト
-        combined_text = f"{full_text} {hiring_page_text}"
+
+        # 採用品質の判定はできる限り採用ページ本文のみで行う。
+        # hiring_page_text が取れなかった場合のみ full_text をフォールバックとして使う。
+        # ※ combined_text（全文混在）だと入居者向けFAQや法人理念で誤加点される。
+        hiring_eval_text = hiring_page_text if hiring_page_text else full_text
 
         # --- 各項目の有無を判定 ---
 
-        # 採用専用ページリンクの有無（リンクが存在するだけ）
+        # 採用専用ページリンクの有無（リンクが存在するだけ・トップページで判定）
         has_hiring_page = len(hiring_links) > 0
 
         # 採用ページ本文の充実度（実際に採用ページを読めた場合のみ評価）
@@ -96,11 +99,11 @@ class HiringPageScorer:
             any(kw in hiring_page_text for kw in ["募集要項", "応募資格", "給与", "時給", "月給"]),
             any(kw in hiring_page_text for kw in ["未経験", "資格不問", "資格取得支援", "研修"]),
             any(kw in hiring_page_text for kw in ["スタッフの声", "職員インタビュー", "先輩の声", "インタビュー"]),
-            any(kw in hiring_page_text for kw in ["1日の流れ", "一日の流れ", "タイムライン", "スケジュール"]),
+            any(kw in hiring_page_text for kw in ["1日の流れ", "一日の流れ", "一日のスケジュール", "1日のスケジュール"]),
             any(kw in hiring_page_text for kw in ["faq", "よくある質問", "q&a", "q＆a"]),
-            len(hiring_page_text) > 1000,  # 1000文字以上の採用ページテキストがある
         ]
-        has_hiring_page_content = hiring_page_text and sum(hiring_content_signals) >= 3
+        # ※ 「文字数が多い」は採用ページ品質の証拠にならないため除外
+        has_hiring_page_content = bool(hiring_page_text) and sum(hiring_content_signals) >= 3
 
         # 応募フォームの有無（採用ページ上のものを優先）
         has_form = (
@@ -108,35 +111,48 @@ class HiringPageScorer:
             or facility_data.get("has_form", False)
         )
 
-        # 給与・勤務条件キーワードの有無（採用ページ優先）
-        job_keywords = ["給与", "時給", "月給", "勤務時間", "シフト", "手当", "賞与", "交通費"]
-        has_job_details = any(kw in combined_text for kw in job_keywords)
+        # 給与・勤務条件キーワードの有無（採用ページ本文で判定）
+        # ※ 「シフト」「手当」はサービス説明・利用料金ページでも出るため除外
+        job_keywords = ["給与", "時給", "月給", "勤務時間", "賞与", "交通費支給", "福利厚生"]
+        has_job_details = any(kw in hiring_eval_text for kw in job_keywords)
 
         # スマホ対応（viewportメタタグ）の有無 — 基本的なので単独では重視しない
         has_mobile_support = facility_data.get("has_viewport", False)
 
-        # FAQ / よくある質問の有無
-        faq_keywords = ["faq", "よくある質問", "q&a", "q＆a", "よくある"]
-        has_faq = any(kw in combined_text for kw in faq_keywords)
+        # FAQ / よくある質問の有無（採用ページ本文で判定）
+        # ※ 「よくある」は入居者向けFAQでも出るため除外し、より具体的な表現のみ使用
+        faq_keywords = ["faq", "よくある質問", "q&a", "q＆a", "採用q", "採用faq"]
+        has_faq = any(kw in hiring_eval_text for kw in faq_keywords)
 
-        # 未経験者向け情報の有無
+        # 未経験者向け情報の有無（採用ページ本文で判定）
+        # ※ 「研修制度」は法人理念ページにも出るため、採用ページ評価テキストで判定
         exp_keywords = ["未経験", "資格不問", "初心者", "経験不問", "未経験歓迎", "研修制度", "資格取得支援"]
-        has_experience_info = any(kw in combined_text for kw in exp_keywords)
+        has_experience_info = any(kw in hiring_eval_text for kw in exp_keywords)
 
-        # 1日の流れ・タイムラインの有無
-        schedule_keywords = ["1日の流れ", "一日の流れ", "タイムライン", "スケジュール", "業務の流れ", "day in"]
-        has_daily_schedule = any(kw in combined_text for kw in schedule_keywords)
+        # 1日の流れ・タイムラインの有無（採用ページ本文で判定）
+        # ※ 「スケジュール」「業務の流れ」はデイサービス利用者向け案内でも出るため除外
+        schedule_keywords = ["1日の流れ", "一日の流れ", "一日のスケジュール", "1日のスケジュール",
+                             "タイムライン", "day in the life"]
+        has_daily_schedule = any(kw in hiring_eval_text for kw in schedule_keywords)
 
-        # スタッフの声・インタビューの有無（充実した採用サイトの特徴）
+        # スタッフの声・インタビューの有無（採用ページ本文で判定）
         voice_keywords = ["スタッフの声", "職員の声", "先輩の声", "スタッフインタビュー",
                           "職員インタビュー", "先輩インタビュー", "働く人の声", "社員の声"]
-        has_staff_voice = any(kw in combined_text for kw in voice_keywords)
+        has_staff_voice = any(kw in hiring_eval_text for kw in voice_keywords)
 
-        # 複数職種・求人の有無（採用サイトが充実しているサイン）
-        position_keywords = ["介護職員", "看護師", "ケアマネ", "相談員", "調理師", "事務",
-                             "正社員", "パート", "アルバイト", "非常勤", "常勤"]
-        position_hits = sum(1 for kw in position_keywords if kw in combined_text)
-        has_multiple_positions = position_hits >= 3
+        # 複数職種・求人の有無
+        # ※ 雇用形態（正社員・パート・常勤）は職種ではないため除外
+        # ※ 職種キーワードが2種類以上あれば「複数職種募集」と判定
+        job_type_keywords = ["介護職員", "介護士", "看護師", "ケアマネ", "ケアマネージャー",
+                             "生活相談員", "相談員", "調理師", "栄養士", "作業療法士",
+                             "理学療法士", "言語聴覚士", "事務員", "管理者", "施設長"]
+        job_type_hits = sum(1 for kw in job_type_keywords if kw in hiring_eval_text)
+        has_multiple_positions = job_type_hits >= 2
+
+        # 募集停止ネガティブシグナル（採用ページが実質機能していない施設を検出）
+        stop_keywords = ["現在募集していません", "募集を停止", "募集は行っておりません",
+                         "採用は予定しておりません", "定員に達しました"]
+        is_recruitment_stopped = any(kw in hiring_eval_text for kw in stop_keywords)
 
         flags = {
             "has_hiring_page": has_hiring_page,
@@ -151,7 +167,11 @@ class HiringPageScorer:
             "has_multiple_positions": has_multiple_positions,
         }
 
-        return self._make_result(flags)
+        extra = []
+        if is_recruitment_stopped:
+            extra.append("⚠️ 募集停止の可能性（「現在募集していません」等の記載あり）")
+
+        return self._make_result(flags, extra_notes=extra if extra else None)
 
     # ------------------------------------------------------------------
     # 内部ヘルパーメソッド
